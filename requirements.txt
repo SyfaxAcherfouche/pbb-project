@@ -1,0 +1,9 @@
+duckdb
+pandas
+pyarrow
+euroleague-api
+requests
+python-dotenv
+jupyter
+matplotlib
+plotly

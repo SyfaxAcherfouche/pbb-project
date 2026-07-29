@@ -1,0 +1,20 @@
+# Données (jamais commitées, même fabriquées)
+data/raw/*
+data/processed/*
+data/warehouse/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/warehouse/.gitkeep
+
+# Environnement Python
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets
+.env
+*.env
+
+# OS
+.DS_Store
