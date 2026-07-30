@@ -27,7 +27,7 @@ STEPS = [
     ("bronze (plan_api)", ROOT / "bronze" / "load_bronze_api.py"),
     ("bronze (billetterie)", ROOT / "bronze" / "load_bronze_billetterie.py"),
     ("silver", ROOT / "silver" / "clean_silver.py"),
-    # ("gold", ROOT / "gold" / "build_gold.py"),  # prochaine étape
+    ("gold", ROOT / "gold" / "build_gold.py"),
 ]
 
 

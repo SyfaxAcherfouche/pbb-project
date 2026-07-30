@@ -2,8 +2,8 @@
 Couche BRONZE : chargement des fichiers billetterie (sftp/orders/).
 
 Structure des fichiers, confirmée sur échantillon :
-  {"orders": [...], "included": {20 tables de nomenclature}}
-  orders[].products[].tickets[]  (3 niveaux, cf. PDF du sujet)
+    {"orders": [...], "included": {20 tables de nomenclature}}
+    orders[].products[].tickets[]  (3 niveaux, cf. PDF du sujet)
 
 On déplie jusqu'au niveau ticket (un ticket = un billet = un siège), et on
 charge séparément les tables de nomenclature utiles (sessions, product_types,
