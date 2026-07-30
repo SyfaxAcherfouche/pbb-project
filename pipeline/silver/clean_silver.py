@@ -136,10 +136,58 @@ def pass_through_tables(con: duckdb.DuckDBPyConnection):
     logger.info("Tables passthrough bronze -> silver terminées")
 
 
+def clean_billetterie(con: duckdb.DuckDBPyConnection):
+    """
+    Filtre les billets réellement vendus (order_status_id = 1, "Validée")
+    et non annulés au niveau produit (product_is_cancelled = false).
+    Les commandes en attente/annulées/remboursées sont exclues du décompte
+    de billets vendus, mais on garde une table brute filtrée plutôt que
+    d'agréger tout de suite -- l'agrégation par match se fera en gold.
+    """
+    existing = {t for (t,) in con.execute("SHOW TABLES FROM bronze").fetchall()}
+    if "raw_billets" not in existing:
+        logger.warning("bronze.raw_billets absent, silver billetterie ignoré")
+        return
+
+    con.execute("""
+        CREATE OR REPLACE TABLE silver.billets AS
+        SELECT
+            bar_code,
+            ext_id,
+            session_id,
+            order_id,
+            ticket_id,
+            product_type_id,
+            category_id,
+            amount,
+            order_status_id,
+            product_is_cancelled,
+            ticket_status_id,
+            order_creation_date,
+            order_validation_date,
+            seat_gate, seat_stand, seat_row, seat_number
+        FROM bronze.raw_billets
+        WHERE order_status_id = 1        -- "Validée"
+          AND NOT product_is_cancelled   -- pas annulé au niveau produit
+    """)
+    n_total = con.execute("SELECT COUNT(*) FROM bronze.raw_billets").fetchone()[0]
+    n_valid = con.execute("SELECT COUNT(*) FROM silver.billets").fetchone()[0]
+    logger.info(
+        "silver.billets : %d billets vendus retenus sur %d au total en bronze (%.1f%%)",
+        n_valid, n_total, 100 * n_valid / n_total if n_total else 0,
+    )
+
+    con.execute("CREATE OR REPLACE TABLE silver.sessions AS SELECT * FROM bronze.raw_billetterie_sessions")
+    con.execute("CREATE OR REPLACE TABLE silver.product_types AS SELECT * FROM bronze.raw_billetterie_product_types")
+    n_sessions = con.execute("SELECT COUNT(*) FROM silver.sessions").fetchone()[0]
+    logger.info("silver.sessions : %d sessions (matchs à domicile)", n_sessions)
+
+
 def main():
     con = get_connection()
     clean_contacts(con)
     clean_boutique(con)
+    clean_billetterie(con)
     pass_through_tables(con)
 
     tables = con.execute("SHOW TABLES FROM silver").fetchall()

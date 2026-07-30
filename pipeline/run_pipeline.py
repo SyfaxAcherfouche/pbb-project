@@ -25,8 +25,9 @@ ROOT = Path(__file__).resolve().parent
 STEPS = [
     ("bronze (dataset + scans)", ROOT / "bronze" / "load_bronze.py"),
     ("bronze (plan_api)", ROOT / "bronze" / "load_bronze_api.py"),
+    ("bronze (billetterie)", ROOT / "bronze" / "load_bronze_billetterie.py"),
     ("silver", ROOT / "silver" / "clean_silver.py"),
-    # ("gold", ROOT / "gold" / "build_gold.py"),  # à activer une fois la billetterie disponible
+    # ("gold", ROOT / "gold" / "build_gold.py"),  # prochaine étape
 ]
 
 
