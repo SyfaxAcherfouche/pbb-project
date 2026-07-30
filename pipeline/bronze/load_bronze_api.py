@@ -4,13 +4,13 @@ les APIs externes, cf. README fourni par le club — utilisé quand l'API en
 direct est indisponible ou pour éviter la dépendance réseau le jour J).
 
 Sources chargées :
-    - open_meteo/paris_horaire_*.json      -> bronze.raw_meteo_horaire
-    - calendrier_scolaire/zone_c_*.json    -> bronze.raw_vacances_scolaires
-    - population/communes_idf_*.json       -> bronze.raw_population_communes
-    - population/arrondissements_paris_*.json -> bronze.raw_population_arrondissements
-    - euroleague/streaks_r*.json           -> bronze.raw_euroleague_streaks
-        (structure imbriquée : un fichier = un classement à une journée donnée,
-        avec une liste d'équipes ; on garde le round dans le nom de fichier)
+  - open_meteo/paris_horaire_*.json      -> bronze.raw_meteo_horaire
+  - calendrier_scolaire/zone_c_*.json    -> bronze.raw_vacances_scolaires
+  - population/communes_idf_*.json       -> bronze.raw_population_communes
+  - population/arrondissements_paris_*.json -> bronze.raw_population_arrondissements
+  - euroleague/streaks_r*.json           -> bronze.raw_euroleague_streaks
+    (structure imbriquée : un fichier = un classement à une journée donnée,
+     avec une liste d'équipes ; on garde le round dans le nom de fichier)
 
 Usage :
     python pipeline/bronze/load_bronze_api.py
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[2]
 PLAN_API = ROOT / "data" / "raw" / "plan_api"
+EUROLEAGUE_SEASON_DIR = PLAN_API / "euroleague" / "E2025"
 WAREHOUSE = ROOT / "data" / "warehouse" / "pbb.duckdb"
 
 
@@ -54,10 +55,10 @@ def load_meteo(con: duckdb.DuckDBPyConnection):
     con.execute(f"""
         CREATE OR REPLACE TABLE bronze.raw_meteo_horaire AS
         SELECT UNNEST(hourly.time) AS heure,
-                UNNEST(hourly.temperature_2m) AS temperature,
-                UNNEST(hourly.apparent_temperature) AS temperature_ressentie,
-                UNNEST(hourly.precipitation) AS precipitation,
-                UNNEST(hourly.weather_code) AS code_meteo
+               UNNEST(hourly.temperature_2m) AS temperature,
+               UNNEST(hourly.apparent_temperature) AS temperature_ressentie,
+               UNNEST(hourly.precipitation) AS precipitation,
+               UNNEST(hourly.weather_code) AS code_meteo
         FROM read_json_auto('{path}')
     """)
     n = con.execute("SELECT COUNT(*) FROM bronze.raw_meteo_horaire").fetchone()[0]
@@ -116,9 +117,9 @@ def load_euroleague_streaks(con: duckdb.DuckDBPyConnection):
     {"winner": {...}, "teams": [{...}, ...]}. On extrait le numéro de
     journée depuis le nom de fichier et on déplie 'teams'.
     """
-    files = sorted((PLAN_API / "euroleague").glob("streaks_r*.json"))
+    files = sorted(EUROLEAGUE_SEASON_DIR.glob("streaks_r*.json"))
     if not files:
-        logger.warning("Aucun fichier streaks trouvé dans plan_api/euroleague/")
+        logger.warning("Aucun fichier streaks trouvé dans plan_api/euroleague/E2025/")
         return
 
     con.execute("CREATE OR REPLACE TABLE bronze.raw_euroleague_streaks AS SELECT 1 WHERE FALSE")
