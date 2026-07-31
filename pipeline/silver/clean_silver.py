@@ -3,10 +3,10 @@ Couche SILVER : nettoyage, typage, correction des incohérences détectées en
 bronze.
 
 Problèmes de qualité connus et corrigés ici :
-  - contacts.date_naissance : mélange YYYY-MM-DD et DD/MM/YYYY
-  - boutique.VENTE_date : mélange TROIS formats (YYYY-MM-DD, DD/MM/YYYY,
+    - contacts.date_naissance : mélange YYYY-MM-DD et DD/MM/YYYY
+    - boutique.VENTE_date : mélange TROIS formats (YYYY-MM-DD, DD/MM/YYYY,
     DD-MM-YYYY)
-  - boutique : décimales format FR (virgule), ventes ANNULEE à isoler,
+    - boutique : décimales format FR (virgule), ventes ANNULEE à isoler,
     doublons exacts de ligne_id (artefact d'export caisse)
 
 Les autres tables bronze (déjà propres à l'inspection : un seul format de
@@ -168,7 +168,7 @@ def clean_billetterie(con: duckdb.DuckDBPyConnection):
             seat_gate, seat_stand, seat_row, seat_number
         FROM bronze.raw_billets
         WHERE order_status_id = 1        -- "Validée"
-          AND NOT product_is_cancelled   -- pas annulé au niveau produit
+        AND NOT product_is_cancelled   -- pas annulé au niveau produit
     """)
     n_total = con.execute("SELECT COUNT(*) FROM bronze.raw_billets").fetchone()[0]
     n_valid = con.execute("SELECT COUNT(*) FROM silver.billets").fetchone()[0]
