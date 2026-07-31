@@ -2,12 +2,12 @@
 Couche BRONZE : chargement brut des sources, sans transformation.
 
 Principe de l'architecture médaillon :
-    bronze = copie fidèle de la source (mêmes valeurs, mêmes formats bruts)
-    silver = nettoyée, typée, dédupliquée (étape suivante, pas encore écrite)
-    gold   = agrégée, prête pour l'analyse et le dashboard (à venir)
+  bronze = copie fidèle de la source (mêmes valeurs, mêmes formats bruts)
+  silver = nettoyée, typée, dédupliquée (voir pipeline/silver/clean_silver.py)
+  gold   = agrégée, prête pour l'analyse et le dashboard (voir pipeline/gold/)
 
 Objectif de cette étape : ne JAMAIS transformer la donnée ici. Si un fichier
-source change de format demain, seule cette couche doit être rejouée, les
+source change de format demain, seule cette couche doit être rejouée — les
 couches silver/gold restent intactes et inspectables.
 
 Usage :
@@ -36,13 +36,7 @@ def get_connection() -> duckdb.DuckDBPyConnection:
 
 
 def load_simple_csvs(con: duckdb.DuckDBPyConnection):
-    """
-    Sources CSV standards (encodage UTF-8, virgule comme séparateur) :
-    chargement direct en bronze.raw_<nom>, sans transformation.
-
-    Si un fichiers ne s'appelle pas exactement comme dans ce
-    dictionnaire, faut ajuster le nom ici.
-    """
+    """Sources CSV standards : chargement direct en bronze.raw_*."""
     simple_files = {
         "resultats_matchs": "resultats_matchs.csv",
         "satisfaction": "satisfaction.csv",
@@ -71,31 +65,79 @@ def load_simple_csvs(con: duckdb.DuckDBPyConnection):
 
 def load_scans(con: duckdb.DuckDBPyConnection):
     """
-    Un fichier scan_AAAAMMJJ.csv par match. On charge tous les fichiers du
-    dossier en une seule table, avec le nom de fichier source en colonne
-    pour traçabilité.
+    Un fichier scan_AAAAMMJJ.csv par match. Traité fichier par fichier :
+    au moins un fichier rencontré en pratique (scan_20251017.csv) n'a PAS
+    de ligne d'en-tête -- la première ligne est déjà une donnée. Avec un
+    chargement en glob classique, DuckDB prend alors cette ligne comme noms
+    de colonnes : le schéma se décale silencieusement, une vraie ligne de
+    scan est perdue, et 'resultat' finit NULL sur tout le fichier (bug
+    découvert via taux_presence = 0 pour le match du 17/10/2025 en gold,
+    alors que les scans existaient réellement).
+
+    On détecte le cas en comparant la première ligne au nom de la première
+    colonne attendue, et on force le bon schéma si l'en-tête est absent.
     """
-    pattern = str(RAW_SCANS / "scan_*.csv")
-    con.execute(f"""
-        CREATE OR REPLACE TABLE bronze.raw_scans AS
-        SELECT *, regexp_extract(filename, 'scan_(\\d{{8}})', 1) AS date_fichier
-        FROM read_csv_auto('{pattern}', header=True, filename=True, union_by_name=True)
-    """)
+    EXPECTED_COLUMNS = ["barcode", "scan_ts_utc", "portique", "ext_id", "type_billet", "resultat"]
+    files = sorted(RAW_SCANS.glob("scan_*.csv"))
+    if not files:
+        logger.warning("Aucun fichier scan_*.csv trouvé dans %s", RAW_SCANS)
+        return
+
+    con.execute("DROP TABLE IF EXISTS bronze.raw_scans")
+    files_no_header = []
+    files_failed = []
+
+    for path in files:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                first_line = f.readline().strip()
+            if not first_line:
+                raise ValueError("fichier vide")
+            has_header = first_line.split(",")[0].strip() == EXPECTED_COLUMNS[0]
+            date_fichier = path.stem.replace("scan_", "")
+
+            if has_header:
+                query = f"""
+                    SELECT *, '{path.name}' AS filename, '{date_fichier}' AS date_fichier
+                    FROM read_csv_auto('{path}', header=True)
+                """
+            else:
+                files_no_header.append(path.name)
+                query = f"""
+                    SELECT *, '{path.name}' AS filename, '{date_fichier}' AS date_fichier
+                    FROM read_csv_auto('{path}', header=False, names={EXPECTED_COLUMNS!r})
+                """
+
+            con.execute(f"CREATE OR REPLACE TABLE bronze._tmp_scans AS {query}")
+            existing = {t for (t,) in con.execute("SHOW TABLES FROM bronze").fetchall()}
+            if "raw_scans" not in existing:
+                con.execute("CREATE TABLE bronze.raw_scans AS SELECT * FROM bronze._tmp_scans")
+            else:
+                con.execute("INSERT INTO bronze.raw_scans SELECT * FROM bronze._tmp_scans")
+        except (duckdb.Error, ValueError, OSError) as e:
+            logger.warning("Fichier scan ignoré (illisible/vide) : %s -> %s", path.name, e)
+            files_failed.append(path.name)
+
+    con.execute("DROP TABLE IF EXISTS bronze._tmp_scans")
+
     n = con.execute("SELECT COUNT(*) FROM bronze.raw_scans").fetchone()[0]
     n_files = con.execute("SELECT COUNT(DISTINCT filename) FROM bronze.raw_scans").fetchone()[0]
-    logger.info("bronze.raw_scans : %d lignes sur %d fichier(s)", n, n_files)
+    logger.info(
+        "bronze.raw_scans : %d lignes sur %d fichier(s) OK (%d en échec sur %d total)",
+        n, n_files, len(files_failed), len(files),
+    )
+    if files_no_header:
+        logger.warning(
+            "Fichier(s) sans ligne d'en-tête détecté(s) et corrigé(s) automatiquement : %s",
+            files_no_header,
+        )
+    if files_failed:
+        logger.warning("Fichier(s) scan ignorés (vides/illisibles) : %s", files_failed)
 
 
 def load_contacts(con: duckdb.DuckDBPyConnection):
-    """
-    contacts.csv : chargé en texte brut (all_varchar=True). On ne type pas
-    encore les dates ici car la source mélange plusieurs formats de date
-    de naissance — ce nettoyage sera fait en couche silver, pas ici.
-    """
+    """contacts.csv chargé en texte brut (typage/nettoyage fait en silver)."""
     path = RAW_DATASET / "contacts.csv"
-    if not path.exists():
-        logger.warning("contacts.csv absent, ignoré")
-        return
     con.execute(f"""
         CREATE OR REPLACE TABLE bronze.raw_contacts AS
         SELECT * FROM read_csv_auto('{path}', header=True, all_varchar=True)
@@ -105,15 +147,8 @@ def load_contacts(con: duckdb.DuckDBPyConnection):
 
 
 def load_boutique(con: duckdb.DuckDBPyConnection):
-    """
-    boutique_ventes_avoirs.csv : délimiteur ';' (pas ','), décimales au
-    format français ('39,00' et non '39.00'). Chargé en texte brut, le
-    nettoyage des 3 formats de date coexistants sera fait en silver.
-    """
+    """boutique_ventes_avoirs.csv chargé en texte brut (délimiteur ';', décimales FR)."""
     path = RAW_DATASET / "boutique_ventes_avoirs.csv"
-    if not path.exists():
-        logger.warning("boutique_ventes_avoirs.csv absent, ignoré")
-        return
     con.execute(f"""
         CREATE OR REPLACE TABLE bronze.raw_boutique AS
         SELECT * FROM read_csv_auto(
