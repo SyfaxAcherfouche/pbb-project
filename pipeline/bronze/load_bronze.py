@@ -2,9 +2,9 @@
 Couche BRONZE : chargement brut des sources, sans transformation.
 
 Principe de l'architecture médaillon :
-  bronze = copie fidèle de la source (mêmes valeurs, mêmes formats bruts)
-  silver = nettoyée, typée, dédupliquée (voir pipeline/silver/clean_silver.py)
-  gold   = agrégée, prête pour l'analyse et le dashboard (voir pipeline/gold/)
+    bronze = copie fidèle de la source (mêmes valeurs, mêmes formats bruts)
+    silver = nettoyée, typée, dédupliquée (voir pipeline/silver/clean_silver.py)
+    gold   = agrégée, prête pour l'analyse et le dashboard (voir pipeline/gold/)
 
 Objectif de cette étape : ne JAMAIS transformer la donnée ici. Si un fichier
 source change de format demain, seule cette couche doit être rejouée — les
