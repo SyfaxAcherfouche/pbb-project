@@ -60,6 +60,22 @@ def build_fact_match(con: duckdb.DuckDBPyConnection):
             LEFT JOIN silver.product_types pt ON b.product_type_id = pt.id
             GROUP BY s.id, CAST(s.start_at AS DATE)
         ),
+        annulations_agg AS (
+            -- Basé sur bronze.raw_billets (TOUS les statuts, pas juste les
+            -- billets valides) pour mesurer le volume de commandes qui
+            -- n'aboutissent pas : annulées, remboursées, en attente.
+            -- order_status_id : 1=Validée, 4=En attente, 8=Annulée, 9=Remboursée
+            SELECT
+                s.id AS session_id,
+                CAST(s.start_at AS DATE) AS date_match,
+                COUNT(*) AS billets_total_bronze,
+                COUNT(*) FILTER (WHERE b.order_status_id = 8) AS billets_annules,
+                COUNT(*) FILTER (WHERE b.order_status_id = 9) AS billets_rembourses,
+                COUNT(*) FILTER (WHERE b.order_status_id = 4) AS billets_en_attente
+            FROM bronze.raw_billets b
+            JOIN silver.sessions s ON b.session_id = s.id
+            GROUP BY s.id, CAST(s.start_at AS DATE)
+        ),
         scans_agg AS (
             SELECT
                 date_fichier,
@@ -98,6 +114,12 @@ def build_fact_match(con: duckdb.DuckDBPyConnection):
             ba.billets_unite,
             ROUND(ba.billets_unite::DOUBLE / NULLIF(ba.billets_vendus, 0), 3) AS part_billets_unite,
 
+            -- annulations / no-show (basé sur TOUS les statuts en bronze)
+            aa.billets_annules,
+            aa.billets_rembourses,
+            aa.billets_en_attente,
+            ROUND(aa.billets_annules::DOUBLE / NULLIF(aa.billets_total_bronze, 0), 3) AS taux_annulation,
+
             -- présence réelle (scans)
             sa.entrees_ok,
             ROUND(sa.entrees_ok::DOUBLE / NULLIF(ba.billets_vendus, 0), 3) AS taux_presence,
@@ -128,6 +150,7 @@ def build_fact_match(con: duckdb.DuckDBPyConnection):
 
         FROM silver.calendrier_matchs c
         LEFT JOIN billets_agg ba ON CAST(ba.date_match AS DATE) = c.date
+        LEFT JOIN annulations_agg aa ON CAST(aa.date_match AS DATE) = c.date
         LEFT JOIN scans_agg sa ON sa.date_fichier = strftime(c.date, '%Y%m%d')
         LEFT JOIN resultats_domicile rd ON rd.date = c.date
         ORDER BY c.date
