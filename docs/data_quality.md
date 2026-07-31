@@ -75,7 +75,7 @@ proprement avec un avertissement plutôt que de faire planter le pipeline.
 donnée à perdre). Le match concerné dispose déjà d'un autre fichier scan
 valide à une date proche, donc aucune perte de complétude sur `fact_match`.
 
-## 4. `contacts.csv` — formats de date mixtes
+## 4. `contacts.csv` : formats de date mixtes
 
 **Détection** : inspection manuelle de `date_naissance`, deux formats visibles
 dès les premières lignes.
