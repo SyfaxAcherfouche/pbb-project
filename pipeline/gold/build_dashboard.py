@@ -227,18 +227,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <ul>
       <li><strong>Le classement de l'adversaire est le facteur le plus discriminant</strong> :
       le remplissage chute de ~90% face à un top adversaire à ~65% face à un
-      adversaire en bas de tableau.</li>
+      adversaire en bas de tableau. Confirmé statistiquement par un modèle
+      de régression (feature la plus influente, de loin).</li>
       <li><strong>Écart net entre compétitions</strong> : Playoffs et EuroLeague
       remplissent mieux (~83-85%) que le championnat national Betclic ÉLITE (~75%).</li>
       <li><strong>Le dimanche sous-performe</strong> systématiquement (~75%) par
       rapport aux mardis/jeudis (~81-82%).</li>
       <li><strong>Les vacances scolaires réduisent le remplissage</strong> (75% vs
       81% hors vacances) — effet vérifié indépendamment du classement adversaire.</li>
+      <li><strong>La satisfaction du public dépend du résultat, pas du remplissage</strong> :
+      8.1/10 en victoire contre 6.2/10 en défaite. Le remplissage et la
+      satisfaction semblaient liés, mais sont en fait deux conséquences
+      distinctes du niveau de l'adversaire.</li>
+      <li><strong>Les annulations augmentent avec la demande</strong> (corrélation 0.62) :
+      les matchs à forte affluence attendue génèrent plus d'achats annulés
+      ensuite — piste pour une politique d'annulation adaptée.</li>
+      <li><strong>Bassin de fans concentré au nord-est parisien</strong> : les 18e et
+      19e arrondissements affichent la plus forte pénétration (>60 contacts
+      pour 1000 habitants), cohérent avec la proximité de la salle.</li>
     </ul>
   </div>
 </main>
 
-<footer>Généré automatiquement par pipeline/gold/build_dashboard.py — voir NOTES.md pour l'analyse complète</footer>
+<footer>Généré automatiquement par pipeline/gold/build_dashboard.py — voir NOTES.md et analysis/exploration.ipynb pour l'analyse complète</footer>
 
 <script>
 const DATA = __DATA_JSON__;
@@ -249,10 +260,12 @@ const competitionLabel = c => c.includes('Playoffs') ? 'playoffs' : c.includes('
 // KPIs
 const avg = arr => { const v = arr.filter(x => x != null); return v.length ? v.reduce((a,b)=>a+b,0) / v.length : 0; };
 const remplissages = DATA.map(d => d.taux_remplissage).filter(x => x != null);
+const tauxAnnulations = DATA.map(d => d.taux_annulation).filter(x => x != null);
 const kpis = [
   { label: 'Remplissage moyen', value: (avg(remplissages)*100).toFixed(1) + '%' },
   { label: 'Match le plus faible', value: (Math.min(...remplissages)*100).toFixed(1) + '%' },
   { label: 'Match le plus fort', value: (Math.max(...remplissages)*100).toFixed(1) + '%' },
+  { label: "Taux d'annulation moyen", value: tauxAnnulations.length ? (avg(tauxAnnulations)*100).toFixed(1) + '%' : 'N/A' },
   { label: 'Matchs analysés', value: DATA.length },
 ];
 document.getElementById('kpis').innerHTML = kpis.map(k =>
