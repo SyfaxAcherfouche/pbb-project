@@ -10,3 +10,4 @@ plotly
 pytz
 seaborn
 scikit-learn
+pytest
