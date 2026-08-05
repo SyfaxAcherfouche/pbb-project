@@ -2,8 +2,8 @@
 
 ## Question métier
 
-**Quels matchs sous-performent en remplissage, et quels leviers
-(tarification, campagnes, timing) pourraient corriger ça ?**
+Quels matchs sous-performent en remplissage, et quels leviers (tarification,
+campagnes, timing) pourraient corriger ça ?
 
 Voir `NOTES.md` pour la réponse complète, les chiffres clés et les
 recommandations. Voir `docs/data_quality.md` pour le détail des anomalies
@@ -11,7 +11,7 @@ de données rencontrées et corrigées.
 
 ## Architecture
 
-Architecture en couches (médaillon bronze / silver / gold), pour isoler la
+Architecture en couches (médaillon bronze / silver / gold) pour isoler la
 casse : si une source change de format, seule la couche bronze est rejouée,
 silver et gold restent intactes.
 
@@ -48,7 +48,9 @@ tests/
   conftest.py                fixture de connexion DuckDB
   test_gold_fact_match.py     7 tests d'intégrité sur gold.fact_match
   test_silver_quality.py      5 tests de non-régression sur les corrections silver
-presentation/   slides de soutenance
+presentation/
+  presentation.pptx     slides de soutenance (14 slides, non exigées au
+                         rendu mais incluses pour la préparation orale)
 NOTES.md        question métier, chiffres clés, réponse, limites
 ```
 
@@ -84,7 +86,7 @@ python pipeline/gold/build_gold.py
 python pipeline/gold/build_dashboard.py
 ```
 
-**Prérequis** : déposer les fichiers sources dans `data/raw/` selon
+Prérequis : déposer les fichiers sources dans `data/raw/` selon
 l'arborescence attendue (`dataset/`, `sftp/scans/`, `sftp/orders/`,
 `plan_api/euroleague/E2025/`, `plan_api/open_meteo/`,
 `plan_api/calendrier_scolaire/`, `plan_api/population/`) avant de lancer.
@@ -102,33 +104,32 @@ non-régression des corrections de qualité de données appliquées en silver
 
 ## Consulter les résultats
 
-- **`dashboard/dashboard.html`** : ouvrir directement dans un navigateur,
+- `dashboard/dashboard.html` : à ouvrir directement dans un navigateur,
   autonome, se lit en 2 minutes.
-- **`analysis/exploration.ipynb`** : notebook complet avec tout le détail
-  de l'analyse, y compris les hypothèses testées et écartées (transparence
-  sur la démarche, pas seulement les résultats positifs) et le modèle de
-  prédiction.
-- **`NOTES.md`** : synthèse écrite, chiffres clés, recommandations,
-  limites.
+- `analysis/exploration.ipynb` : notebook complet, y compris les
+  hypothèses testées et écartées (transparence sur la démarche, pas
+  seulement les résultats positifs) et le modèle de prédiction.
+- `NOTES.md` : synthèse écrite, chiffres clés, recommandations, limites.
+- `presentation/presentation.pptx` : support de la soutenance orale.
 
 ## Robustesse du pipeline
 
-Le pipeline a été construit pour ne jamais s'arrêter au premier fichier
-récalcitrant, avec 3 cas réels rencontrés et corrigés automatiquement
-(détail dans `docs/data_quality.md`) :
-- fichiers billetterie JSON corrompus (2/358, isolés et ignorés)
-- fichier scan sans ligne d'en-tête (détecté et corrigé)
-- fichier scan vide (isolé et ignoré)
+Le pipeline ne s'arrête pas au premier fichier récalcitrant. Trois cas
+réels rencontrés en pratique et corrigés automatiquement (détail dans
+`docs/data_quality.md`) :
+- fichiers billetterie JSON corrompus (2/358), isolés et ignorés
+- fichier scan sans ligne d'en-tête, détecté et corrigé
+- fichier scan vide, isolé et ignoré
 
-Ces 3 corrections sont couvertes par des tests de non-régression
+Ces trois corrections sont couvertes par des tests de non-régression
 (`tests/test_silver_quality.py`).
 
 ## Approche git
 
 Développement principalement sur `main`, avec des branches dédiées
 (`experiment/modele-remplissage`, `experiment/analyse-digital`) pour les
-axes d'analyse les plus incertains ou exploratoires, mergées une fois
-validées. Commits atomiques, un changement logique par commit.
+axes les plus incertains ou exploratoires, mergées une fois validées.
+Commits atomiques, un changement logique par commit.
 
 ## Statut
 
@@ -136,10 +137,11 @@ validées. Commits atomiques, un changement logique par commit.
 - [x] Pipeline bronze / silver / gold, robuste et testé
 - [x] Table de faits `gold.fact_match` (41 matchs, 100% de complétude)
 - [x] Qualité de données documentée (`docs/data_quality.md`)
-- [x] Notebook d'exploration complet (13 sections, y compris hypothèses
-      testées et écartées : météo, horaire)
+- [x] Notebook d'exploration complet (13 sections, hypothèses testées et
+      écartées incluses)
 - [x] Modèle de prédiction (régression Ridge, LOO-CV, MAE 8.3%)
 - [x] Funnel e-commerce et performance des campagnes marketing
 - [x] Dashboard autonome avec charte graphique du club
-- [x] Tests de cohérence automatisés (12 tests, `tests/`)
-- [x] `NOTES.md` (question, chiffres clés, recommandations, limites)
+- [x] Tests de cohérence automatisés (12 tests)
+- [x] `NOTES.md`
+- [x] Slides de soutenance
