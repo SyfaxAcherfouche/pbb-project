@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paris Basketball — Remplissage des matchs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <script>/*!
  * Chart.js v4.4.0
  * https://www.chartjs.org
@@ -21,232 +23,313 @@
 </script>
 <style>
   :root {
-    --navy: #111111;
-    --navy-light: #1439B0;
-    --amber: #E4032E;
-    --red: #E4032E;
-    --cream: #FAFAFA;
-    --gray: #6B7280;
+    --background: #14161b;
+    --surface: #1d1f26;
+    --surface-2: #24262e;
+    --sidebar: #191b21;
+    --muted: #24262e;
+    --border: #33353f;
+    --foreground: #f4f4f5;
+    --muted-foreground: #a7a8b0;
+    --primary: #e3392f;
+    --accent: #3552c4;
+    --comp-playoffs: #e3392f;
+    --comp-euroleague: #4c6fe0;
+    --comp-championnat: #c7c8ce;
+    --positive: #6fcb8e;
+    --radius: 14px;
+    --radius-xl: 18px;
+    --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: var(--cream);
-    color: var(--navy);
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
   }
-  header {
-    background: var(--navy);
-    color: white;
-    padding: 32px 40px;
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; margin: 0; }
+
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 20px 40px -28px rgba(0,0,0,0.8);
   }
+
+  header.court-glow {
+    border-bottom: 1px solid var(--border);
+    background-image:
+      radial-gradient(120% 80% at 12% 0%, rgba(227,57,47,0.22) 0%, transparent 60%),
+      radial-gradient(90% 70% at 95% 10%, rgba(53,82,196,0.22) 0%, transparent 65%);
+  }
+  .header-inner { max-width: 1240px; margin: 0 auto; padding: 48px 24px; }
+  @media (min-width: 768px) { .header-inner { padding: 64px 40px; } }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    background: rgba(36,38,46,0.6);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted-foreground);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+
   header h1 {
-    margin: 0 0 6px;
-    font-size: 26px;
-    letter-spacing: 0.02em;
-  }
-  header p {
-    margin: 0;
-    color: #B9C4D6;
-    font-size: 14px;
-  }
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 32px 40px 60px;
-  }
-  .kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 36px;
-  }
-  .kpi {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    border-left: 4px solid var(--amber);
-  }
-  .kpi .value {
-    font-size: 28px;
+    margin-top: 20px;
+    max-width: 768px;
+    font-size: 36px;
     font-weight: 700;
-    color: var(--navy);
+    line-height: 1.05;
+  }
+  @media (min-width: 768px) { header h1 { font-size: 60px; } }
+  header h1 span { display: block; color: var(--primary); }
+
+  header .subtitle {
+    margin-top: 16px;
+    max-width: 576px;
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+  header .subtitle .mono { font-family: var(--font-mono); color: rgba(244,244,245,0.8); }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 0 24px 96px; }
+  @media (min-width: 768px) { main { padding: 0 40px 96px; } }
+
+  .kpis {
+    margin-top: -32px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    position: relative;
+  }
+  @media (min-width: 1024px) { .kpis { grid-template-columns: repeat(5, 1fr); } }
+
+  .kpi { padding: 20px; }
+  .kpi .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .kpi .stat-num {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0;
   }
   .kpi .label {
-    font-size: 12px;
-    color: var(--gray);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 4px;
-  }
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 900px) {
-    .grid-2 { grid-template-columns: 1fr; }
-  }
-  .card {
-    background: white;
-    border-radius: 10px;
-    padding: 24px;
-  }
-  .card h2 {
-    margin: 0 0 4px;
-    font-size: 16px;
-  }
-  .card .subtitle {
-    font-size: 12px;
-    color: var(--gray);
-    margin-bottom: 16px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th, td {
-    text-align: left;
-    padding: 8px 10px;
-    border-bottom: 1px solid #EDEBE5;
-  }
-  th {
-    color: var(--gray);
-    font-weight: 600;
-    text-transform: uppercase;
+    margin-top: 8px;
     font-size: 11px;
-    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-foreground);
   }
-  tr.low-fill td:first-child {
-    border-left: 3px solid var(--red);
+  .kpi .icon { width: 16px; height: 16px; }
+
+  .chart-grid { margin-top: 24px; display: grid; gap: 24px; }
+  @media (min-width: 1024px) { .chart-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .card { padding: 24px; }
+  .card h2 { font-size: 16px; font-weight: 600; }
+  .card .subtitle { margin-top: 4px; font-size: 12px; color: var(--muted-foreground); }
+  .card .chart-wrap { margin-top: 20px; }
+
+  .chart-legend {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted-foreground);
   }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .chart-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .chart-note { margin-top: 16px; font-size: 12px; color: var(--muted-foreground); }
+
+  .table-section { margin-top: 24px; padding: 24px; }
+  table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px; }
+  thead tr { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-foreground); }
+  th { padding-bottom: 12px; font-weight: 500; }
+  td { padding-top: 12px; padding-bottom: 12px; }
+  tbody tr { border-top: 1px solid rgba(51,53,63,0.7); }
+  td.mono-xs { font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); }
+  td.muted { color: var(--muted-foreground); }
+  td.medium { font-weight: 500; }
+
   .badge {
     display: inline-block;
-    padding: 2px 8px;
     border-radius: 999px;
+    padding: 4px 10px;
     font-size: 11px;
     font-weight: 600;
+    background: var(--muted);
+    color: var(--muted-foreground);
   }
-  .badge.euroleague { background: #E8EEFB; color: var(--navy-light); }
-  .badge.championnat { background: #FBEFE3; color: #8A5A1E; }
-  .badge.playoffs { background: #FCE9E7; color: var(--red); }
-  .insights {
-    background: white;
-    border-radius: 10px;
-    padding: 24px;
-    margin-top: 24px;
-  }
-  .insights h2 { margin-top: 0; font-size: 16px; }
-  .insights ul { margin: 0; padding-left: 20px; line-height: 1.7; font-size: 14px; }
+  .badge.euroleague { background: rgba(76,111,224,0.15); color: var(--comp-euroleague); }
+  .badge.playoffs { background: rgba(227,57,47,0.15); color: var(--comp-playoffs); }
+
+  .fill-cell { display: flex; align-items: center; gap: 12px; }
+  .fill-track { width: 80px; height: 6px; border-radius: 999px; background: var(--muted); overflow: hidden; flex-shrink: 0; }
+  .fill-bar { height: 100%; border-radius: 999px; background: var(--primary); }
+  .fill-value { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; }
+
+  .day-cell { display: inline-flex; align-items: center; gap: 6px; color: var(--muted-foreground); }
+  .day-cell .icon { width: 14px; height: 14px; }
+
+  .insights-section { margin-top: 24px; }
+  .insights-section h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; }
+  .insights-section h2 .icon { width: 16px; height: 16px; color: var(--primary); }
+  .insight-grid { margin-top: 16px; display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .insight-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1280px) { .insight-grid { grid-template-columns: repeat(3, 1fr); } }
+  .insight-card { padding: 20px; }
+  .insight-card h3 { font-size: 14px; font-weight: 600; }
+  .insight-card p { margin-top: 8px; font-size: 14px; line-height: 1.625; color: var(--muted-foreground); }
+
   footer {
-    text-align: center;
-    color: var(--gray);
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
     font-size: 12px;
-    padding: 24px;
+    color: var(--muted-foreground);
   }
+  footer .mono { font-family: var(--font-mono); }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Paris Basketball — Analyse du remplissage des matchs</h1>
-  <p>Saison 2025-2026 · 41 matchs à domicile · généré depuis gold.fact_match</p>
+<header class="court-glow">
+  <div class="header-inner">
+    <span class="eyebrow"><span class="dot"></span>Saison 2025-2026</span>
+    <h1>Paris Basketball<span>Remplissage des matchs</span></h1>
+    <p class="subtitle">41 matchs à domicile · source&nbsp;<span class="mono">gold.fact_match</span></p>
+  </div>
 </header>
 
 <main>
   <div class="kpis" id="kpis"></div>
 
-  <div class="grid-2">
-    <div class="card">
+  <div class="chart-grid">
+    <section class="panel card">
       <h2>Taux de remplissage par match</h2>
-      <div class="subtitle">Trié par date, couleur = compétition</div>
-      <canvas id="chartRemplissage" height="220"></canvas>
-    </div>
-    <div class="card">
+      <div class="subtitle">Ordre chronologique · couleur = compétition</div>
+      <div class="chart-wrap"><canvas id="chartRemplissage" height="260"></canvas></div>
+      <div class="chart-legend" id="legendRemplissage"></div>
+    </section>
+    <section class="panel card">
       <h2>Remplissage vs classement de l'adversaire</h2>
       <div class="subtitle">Rang 1 = meilleur adversaire</div>
-      <canvas id="chartClassement" height="220"></canvas>
-    </div>
+      <div class="chart-wrap"><canvas id="chartClassement" height="260"></canvas></div>
+      <p class="chart-note">Pente nette : plus l'adversaire est bien classé, plus la salle se remplit.</p>
+    </section>
   </div>
 
-  <div class="grid-2">
-    <div class="card">
+  <div class="chart-grid">
+    <section class="panel card">
       <h2>Remplissage moyen par compétition</h2>
-      <canvas id="chartCompetition" height="200"></canvas>
-    </div>
-    <div class="card">
+      <div class="chart-wrap"><canvas id="chartCompetition" height="220"></canvas></div>
+    </section>
+    <section class="panel card">
       <h2>Remplissage moyen par jour de semaine</h2>
-      <canvas id="chartJour" height="200"></canvas>
-    </div>
+      <div class="chart-wrap"><canvas id="chartJour" height="220"></canvas></div>
+    </section>
   </div>
 
-  <div class="card">
+  <section class="panel table-section">
     <h2>Les 8 matchs les plus faibles</h2>
-    <div class="subtitle">Candidats prioritaires pour une action tarifaire ou marketing</div>
-    <table id="tableFaibles">
-      <thead>
-        <tr>
-          <th>Match</th><th>Date</th><th>Adversaire</th><th>Compétition</th>
-          <th>Remplissage</th><th>Rang adversaire</th><th>Jour</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+    <div class="subtitle" style="margin-top:4px;font-size:12px;">Candidats prioritaires pour une action tarifaire ou marketing</div>
+    <div style="margin-top:20px;overflow-x:auto;">
+      <table id="tableFaibles">
+        <thead>
+          <tr>
+            <th>Match</th><th>Date</th><th>Adversaire</th><th>Compétition</th>
+            <th>Remplissage</th><th>Rang adv.</th><th>Jour</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="insights">
-    <h2>Ce que montrent les données</h2>
-    <ul>
-      <li><strong>Le classement de l'adversaire est le facteur le plus discriminant</strong> :
-      le remplissage chute de ~90% face à un top adversaire à ~65% face à un
-      adversaire en bas de tableau. Confirmé statistiquement par un modèle
-      de régression (feature la plus influente, de loin).</li>
-      <li><strong>Écart net entre compétitions</strong> : Playoffs et EuroLeague
-      remplissent mieux (~83-85%) que le championnat national Betclic ÉLITE (~75%).</li>
-      <li><strong>Le dimanche sous-performe</strong> systématiquement (~75%) par
-      rapport aux mardis/jeudis (~81-82%).</li>
-      <li><strong>Les vacances scolaires réduisent le remplissage</strong> (75% vs
-      81% hors vacances) — effet vérifié indépendamment du classement adversaire.</li>
-      <li><strong>La satisfaction du public dépend du résultat, pas du remplissage</strong> :
-      8.1/10 en victoire contre 6.2/10 en défaite. Le remplissage et la
-      satisfaction semblaient liés, mais sont en fait deux conséquences
-      distinctes du niveau de l'adversaire.</li>
-      <li><strong>Les annulations augmentent avec la demande</strong> (corrélation 0.62) :
-      les matchs à forte affluence attendue génèrent plus d'achats annulés
-      ensuite — piste pour une politique d'annulation adaptée.</li>
-      <li><strong>Bassin de fans concentré au nord-est parisien</strong> : les 18e et
-      19e arrondissements affichent la plus forte pénétration (>60 contacts
-      pour 1000 habitants), cohérent avec la proximité de la salle.</li>
-    </ul>
-  </div>
+  <section class="insights-section">
+    <h2>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>
+      Performance digitale — boutique en ligne et campagnes
+    </h2>
+    <div class="chart-grid" style="margin-top:16px;">
+      <section class="panel card">
+        <h2>Taux de conversion par canal d'acquisition</h2>
+        <div class="chart-wrap"><canvas id="chartConversion" height="220"></canvas></div>
+      </section>
+      <section class="panel card">
+        <h2>Performance des campagnes par canal</h2>
+        <div id="campagnesStats" style="margin-top:20px;"></div>
+      </section>
+    </div>
+  </section>
+
+  <section class="insights-section">
+    <h2>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>
+      Ce que montrent les données
+    </h2>
+    <div class="insight-grid" id="insightGrid"></div>
+  </section>
+
+  <footer>Généré automatiquement par <span class="mono">pipeline/gold/build_dashboard.py</span> — voir NOTES.md et analysis/exploration.ipynb pour l'analyse complète.</footer>
 </main>
-
-<footer>Généré automatiquement par pipeline/gold/build_dashboard.py — voir NOTES.md et analysis/exploration.ipynb pour l'analyse complète</footer>
 
 <script>
 const DATA = [{"match_id": "M001", "date": "2025-10-09", "heure": "20:45:00", "competition": "EuroLeague", "journee": 3, "adversaire": "Virtus Bologna", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5173, "taux_remplissage": 0.647, "revenu_billetterie": 327608.6199999995, "prix_moyen_billet": 63.33, "billets_abonnement": 2538.0, "billets_unite": 2164.0, "part_billets_unite": 0.418, "billets_annules": 48, "billets_rembourses": 19, "billets_en_attente": 137, "taux_annulation": 0.009, "entrees_ok": 4718, "taux_presence": 0.912, "rang_pbb_avant": 6, "rang_adversaire_avant": 17, "ecart_classement": 11, "score_domicile": 90, "score_exterieur": 79, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 15.9, "precipitation": 0.0}, {"match_id": "M002", "date": "2025-10-12", "heure": "17:00:00", "competition": "Betclic ÉLITE", "journee": 3, "adversaire": "Monaco", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6746, "taux_remplissage": 0.843, "revenu_billetterie": 378803.4000000059, "prix_moyen_billet": 56.15, "billets_abonnement": 2538.0, "billets_unite": 3446.0, "part_billets_unite": 0.511, "billets_annules": 93, "billets_rembourses": 28, "billets_en_attente": 132, "taux_annulation": 0.013, "entrees_ok": 6154, "taux_presence": 0.912, "rang_pbb_avant": 10, "rang_adversaire_avant": 4, "ecart_classement": -6, "score_domicile": 94, "score_exterieur": 99, "victoire_pbb": 0, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 17.1, "precipitation": 0.0}, {"match_id": "M003", "date": "2025-10-15", "heure": "20:45:00", "competition": "EuroLeague", "journee": 4, "adversaire": "Kosner Baskonia Vitoria-Gasteiz", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5539, "taux_remplissage": 0.692, "revenu_billetterie": 346957.1100000004, "prix_moyen_billet": 62.64, "billets_abonnement": 2538.0, "billets_unite": 2412.0, "part_billets_unite": 0.435, "billets_annules": 94, "billets_rembourses": 49, "billets_en_attente": 122, "taux_annulation": 0.016, "entrees_ok": 5085, "taux_presence": 0.918, "rang_pbb_avant": 4, "rang_adversaire_avant": 20, "ecart_classement": 16, "score_domicile": 105, "score_exterieur": 87, "victoire_pbb": 1, "jour_semaine": "Wednesday", "vacances_scolaires": false, "temperature": 13.9, "precipitation": 0.0}, {"match_id": "M004", "date": "2025-10-17", "heure": "20:45:00", "competition": "EuroLeague", "journee": 5, "adversaire": "Hapoel Shlomo Tel Aviv", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7577, "taux_remplissage": 0.947, "revenu_billetterie": 536570.440000002, "prix_moyen_billet": 70.82, "billets_abonnement": 2538.0, "billets_unite": 4200.0, "part_billets_unite": 0.554, "billets_annules": 96, "billets_rembourses": 52, "billets_en_attente": 195, "taux_annulation": 0.012, "entrees_ok": 6986, "taux_presence": 0.922, "rang_pbb_avant": 5, "rang_adversaire_avant": 10, "ecart_classement": 5, "score_domicile": 88, "score_exterieur": 89, "victoire_pbb": 0, "jour_semaine": "Friday", "vacances_scolaires": true, "temperature": 13.2, "precipitation": 0.0}, {"match_id": "M005", "date": "2025-10-19", "heure": "14:30:00", "competition": "Betclic ÉLITE", "journee": 4, "adversaire": "Dijon", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 3236, "taux_remplissage": 0.405, "revenu_billetterie": 130772.280000001, "prix_moyen_billet": 40.41, "billets_abonnement": 2538.0, "billets_unite": 561.0, "part_billets_unite": 0.173, "billets_annules": 8, "billets_rembourses": 4, "billets_en_attente": 81, "taux_annulation": 0.002, "entrees_ok": 2929, "taux_presence": 0.905, "rang_pbb_avant": 6, "rang_adversaire_avant": 13, "ecart_classement": 7, "score_domicile": 97, "score_exterieur": 92, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": true, "temperature": 13.3, "precipitation": 0.0}, {"match_id": "M006", "date": "2025-10-28", "heure": "20:45:00", "competition": "EuroLeague", "journee": 7, "adversaire": "Anadolu Efes Istanbul", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5977, "taux_remplissage": 0.747, "revenu_billetterie": 331864.2899999997, "prix_moyen_billet": 55.52, "billets_abonnement": 2538.0, "billets_unite": 2777.0, "part_billets_unite": 0.465, "billets_annules": 68, "billets_rembourses": 20, "billets_en_attente": 130, "taux_annulation": 0.011, "entrees_ok": 5458, "taux_presence": 0.913, "rang_pbb_avant": 5, "rang_adversaire_avant": 14, "ecart_classement": 9, "score_domicile": 80, "score_exterieur": 90, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": true, "temperature": 12.8, "precipitation": 0.0}, {"match_id": "M007", "date": "2025-11-06", "heure": "21:00:00", "competition": "EuroLeague", "journee": 9, "adversaire": "FC Bayern Munich", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6345, "taux_remplissage": 0.793, "revenu_billetterie": 390948.1899999965, "prix_moyen_billet": 61.62, "billets_abonnement": 2538.0, "billets_unite": 3085.0, "part_billets_unite": 0.486, "billets_annules": 98, "billets_rembourses": 21, "billets_en_attente": 155, "taux_annulation": 0.015, "entrees_ok": 5816, "taux_presence": 0.917, "rang_pbb_avant": 11, "rang_adversaire_avant": 9, "ecart_classement": -2, "score_domicile": 82, "score_exterieur": 86, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 13.1, "precipitation": 0.0}, {"match_id": "M008", "date": "2025-11-09", "heure": "18:00:00", "competition": "Betclic ÉLITE", "journee": 7, "adversaire": "Limoges", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5925, "taux_remplissage": 0.741, "revenu_billetterie": 287272.0700000011, "prix_moyen_billet": 48.48, "billets_abonnement": 2538.0, "billets_unite": 2832.0, "part_billets_unite": 0.478, "billets_annules": 88, "billets_rembourses": 23, "billets_en_attente": 166, "taux_annulation": 0.014, "entrees_ok": 5437, "taux_presence": 0.918, "rang_pbb_avant": 2, "rang_adversaire_avant": 11, "ecart_classement": 9, "score_domicile": 115, "score_exterieur": 93, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 11.0, "precipitation": 0.0}, {"match_id": "M009", "date": "2025-11-11", "heure": "21:00:00", "competition": "EuroLeague", "journee": 10, "adversaire": "Panathinaikos AKTOR Athens", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5997, "taux_remplissage": 0.75, "revenu_billetterie": 403817.4200000004, "prix_moyen_billet": 67.34, "billets_abonnement": 2538.0, "billets_unite": 2834.0, "part_billets_unite": 0.473, "billets_annules": 64, "billets_rembourses": 42, "billets_en_attente": 137, "taux_annulation": 0.01, "entrees_ok": 5511, "taux_presence": 0.919, "rang_pbb_avant": 14, "rang_adversaire_avant": 7, "ecart_classement": -7, "score_domicile": 95, "score_exterieur": 101, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 12.7, "precipitation": 0.0}, {"match_id": "M010", "date": "2025-11-13", "heure": "20:45:00", "competition": "EuroLeague", "journee": 11, "adversaire": "Valencia Basket", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6797, "taux_remplissage": 0.85, "revenu_billetterie": 458519.1700000011, "prix_moyen_billet": 67.46, "billets_abonnement": 2538.0, "billets_unite": 3661.0, "part_billets_unite": 0.539, "billets_annules": 76, "billets_rembourses": 42, "billets_en_attente": 190, "taux_annulation": 0.011, "entrees_ok": 6225, "taux_presence": 0.916, "rang_pbb_avant": 12, "rang_adversaire_avant": 7, "ecart_classement": -5, "score_domicile": 90, "score_exterieur": 86, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 16.0, "precipitation": 0.0}, {"match_id": "M011", "date": "2025-12-07", "heure": "18:00:00", "competition": "Betclic ÉLITE", "journee": 10, "adversaire": "Saint-Quentin", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 4301, "taux_remplissage": 0.538, "revenu_billetterie": 224060.1100000006, "prix_moyen_billet": 52.09, "billets_abonnement": 2538.0, "billets_unite": 1440.0, "part_billets_unite": 0.335, "billets_annules": 33, "billets_rembourses": 14, "billets_en_attente": 94, "taux_annulation": 0.007, "entrees_ok": 3893, "taux_presence": 0.905, "rang_pbb_avant": 3, "rang_adversaire_avant": 14, "ecart_classement": 11, "score_domicile": 99, "score_exterieur": 69, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 14.4, "precipitation": 0.0}, {"match_id": "M012", "date": "2025-12-09", "heure": "20:00:00", "competition": "Betclic ÉLITE", "journee": 9, "adversaire": "Le Portel", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 4857, "taux_remplissage": 0.607, "revenu_billetterie": 208472.1800000006, "prix_moyen_billet": 42.92, "billets_abonnement": 2538.0, "billets_unite": 1921.0, "part_billets_unite": 0.396, "billets_annules": 33, "billets_rembourses": 18, "billets_en_attente": 109, "taux_annulation": 0.007, "entrees_ok": 4397, "taux_presence": 0.905, "rang_pbb_avant": 1, "rang_adversaire_avant": 16, "ecart_classement": 15, "score_domicile": 110, "score_exterieur": 80, "victoire_pbb": 1, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 14.2, "precipitation": 0.0}, {"match_id": "M013", "date": "2025-12-11", "heure": "20:45:00", "competition": "EuroLeague", "journee": 15, "adversaire": "Zalgiris Kaunas", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7611, "taux_remplissage": 0.951, "revenu_billetterie": 484896.7000000011, "prix_moyen_billet": 63.71, "billets_abonnement": 2538.0, "billets_unite": 4122.0, "part_billets_unite": 0.542, "billets_annules": 119, "billets_rembourses": 43, "billets_en_attente": 147, "taux_annulation": 0.015, "entrees_ok": 6969, "taux_presence": 0.916, "rang_pbb_avant": 13, "rang_adversaire_avant": 4, "ecart_classement": -9, "score_domicile": 105, "score_exterieur": 108, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 9.7, "precipitation": 0.0}, {"match_id": "M014", "date": "2025-12-16", "heure": "21:00:00", "competition": "EuroLeague", "journee": 16, "adversaire": "FC Barcelona", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7517, "taux_remplissage": 0.94, "revenu_billetterie": 565521.8300000033, "prix_moyen_billet": 75.23, "billets_abonnement": 2538.0, "billets_unite": 4061.0, "part_billets_unite": 0.54, "billets_annules": 109, "billets_rembourses": 48, "billets_en_attente": 166, "taux_annulation": 0.014, "entrees_ok": 6871, "taux_presence": 0.914, "rang_pbb_avant": 16, "rang_adversaire_avant": 3, "ecart_classement": -13, "score_domicile": 69, "score_exterieur": 85, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 9.4, "precipitation": 0.0}, {"match_id": "M015", "date": "2025-12-21", "heure": "18:00:00", "competition": "Betclic ÉLITE", "journee": 12, "adversaire": "Cholet", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6502, "taux_remplissage": 0.813, "revenu_billetterie": 310614.650000002, "prix_moyen_billet": 47.77, "billets_abonnement": 2538.0, "billets_unite": 3300.0, "part_billets_unite": 0.508, "billets_annules": 123, "billets_rembourses": 40, "billets_en_attente": 198, "taux_annulation": 0.018, "entrees_ok": 5985, "taux_presence": 0.92, "rang_pbb_avant": 2, "rang_adversaire_avant": 9, "ecart_classement": 7, "score_domicile": 107, "score_exterieur": 84, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": true, "temperature": 10.6, "precipitation": 0.9}, {"match_id": "M016", "date": "2025-12-23", "heure": "20:45:00", "competition": "EuroLeague", "journee": 18, "adversaire": "Crvena Zvezda Meridianbet Belgrade", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6589, "taux_remplissage": 0.824, "revenu_billetterie": 462966.0799999998, "prix_moyen_billet": 70.26, "billets_abonnement": 2538.0, "billets_unite": 3295.0, "part_billets_unite": 0.5, "billets_annules": 82, "billets_rembourses": 60, "billets_en_attente": 151, "taux_annulation": 0.012, "entrees_ok": 6025, "taux_presence": 0.914, "rang_pbb_avant": 15, "rang_adversaire_avant": 8, "ecart_classement": -7, "score_domicile": 102, "score_exterieur": 92, "victoire_pbb": 1, "jour_semaine": "Tuesday", "vacances_scolaires": true, "temperature": 4.6, "precipitation": 0.0}, {"match_id": "M017", "date": "2026-01-13", "heure": "20:10:00", "competition": "Betclic ÉLITE", "journee": 13, "adversaire": "Strasbourg", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5989, "taux_remplissage": 0.749, "revenu_billetterie": 295376.9300000013, "prix_moyen_billet": 49.32, "billets_abonnement": 2538.0, "billets_unite": 2903.0, "part_billets_unite": 0.485, "billets_annules": 88, "billets_rembourses": 42, "billets_en_attente": 118, "taux_annulation": 0.014, "entrees_ok": 5446, "taux_presence": 0.909, "rang_pbb_avant": 2, "rang_adversaire_avant": 7, "ecart_classement": 5, "score_domicile": 96, "score_exterieur": 67, "victoire_pbb": 1, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 11.1, "precipitation": 0.0}, {"match_id": "M018", "date": "2026-01-15", "heure": "20:45:00", "competition": "EuroLeague", "journee": 22, "adversaire": "AS Monaco", "salle": "ACCOR", "capacite_salle": 15000, "billets_vendus": 14095, "taux_remplissage": 0.94, "revenu_billetterie": 1029367.2399999924, "prix_moyen_billet": 73.03, "billets_abonnement": 2538.0, "billets_unite": 9462.0, "part_billets_unite": 0.671, "billets_annules": 231, "billets_rembourses": 90, "billets_en_attente": 284, "taux_annulation": 0.016, "entrees_ok": 12959, "taux_presence": 0.919, "rang_pbb_avant": 17, "rang_adversaire_avant": 1, "ecart_classement": -16, "score_domicile": 87, "score_exterieur": 95, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 11.6, "precipitation": 0.1}, {"match_id": "M019", "date": "2026-01-18", "heure": "18:00:00", "competition": "Betclic ÉLITE", "journee": 16, "adversaire": "Le Mans", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6905, "taux_remplissage": 0.863, "revenu_billetterie": 492739.1399999978, "prix_moyen_billet": 71.36, "billets_abonnement": 2538.0, "billets_unite": 3466.0, "part_billets_unite": 0.502, "billets_annules": 60, "billets_rembourses": 59, "billets_en_attente": 193, "taux_annulation": 0.008, "entrees_ok": 6303, "taux_presence": 0.913, "rang_pbb_avant": 2, "rang_adversaire_avant": 7, "ecart_classement": 5, "score_domicile": 110, "score_exterieur": 92, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 8.8, "precipitation": 0.0}, {"match_id": "M020", "date": "2026-01-22", "heure": "21:00:00", "competition": "EuroLeague", "journee": 24, "adversaire": "Dubai Basketball", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6850, "taux_remplissage": 0.856, "revenu_billetterie": 416554.5299999977, "prix_moyen_billet": 60.81, "billets_abonnement": 2538.0, "billets_unite": 3500.0, "part_billets_unite": 0.511, "billets_annules": 75, "billets_rembourses": 39, "billets_en_attente": 142, "taux_annulation": 0.011, "entrees_ok": 6253, "taux_presence": 0.913, "rang_pbb_avant": 17, "rang_adversaire_avant": 13, "ecart_classement": -4, "score_domicile": 79, "score_exterieur": 99, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 8.3, "precipitation": 0.0}, {"match_id": "M021", "date": "2026-01-27", "heure": "21:00:00", "competition": "EuroLeague", "journee": 25, "adversaire": "Real Madrid", "salle": "ACCOR", "capacite_salle": 15000, "billets_vendus": 13887, "taux_remplissage": 0.926, "revenu_billetterie": 1014126.0699999905, "prix_moyen_billet": 73.03, "billets_abonnement": 2538.0, "billets_unite": 9452.0, "part_billets_unite": 0.681, "billets_annules": 232, "billets_rembourses": 116, "billets_en_attente": 327, "taux_annulation": 0.016, "entrees_ok": 12796, "taux_presence": 0.921, "rang_pbb_avant": 16, "rang_adversaire_avant": 1, "ecart_classement": -15, "score_domicile": 98, "score_exterieur": 92, "victoire_pbb": 1, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 7.5, "precipitation": 0.0}, {"match_id": "M022", "date": "2026-02-01", "heure": "15:30:00", "competition": "Betclic ÉLITE", "journee": 18, "adversaire": "Boulazac", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5689, "taux_remplissage": 0.711, "revenu_billetterie": 342015.2099999966, "prix_moyen_billet": 60.12, "billets_abonnement": 2538.0, "billets_unite": 2622.0, "part_billets_unite": 0.461, "billets_annules": 71, "billets_rembourses": 42, "billets_en_attente": 115, "taux_annulation": 0.012, "entrees_ok": 5183, "taux_presence": 0.911, "rang_pbb_avant": 3, "rang_adversaire_avant": 12, "ecart_classement": 9, "score_domicile": 87, "score_exterieur": 103, "victoire_pbb": 0, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 8.4, "precipitation": 0.3}, {"match_id": "M023", "date": "2026-02-05", "heure": "20:45:00", "competition": "EuroLeague", "journee": 27, "adversaire": "Fenerbahce Beko Istanbul", "salle": "ACCOR", "capacite_salle": 15000, "billets_vendus": 13927, "taux_remplissage": 0.928, "revenu_billetterie": 1407169.8899999936, "prix_moyen_billet": 101.04, "billets_abonnement": 2538.0, "billets_unite": 9113.0, "part_billets_unite": 0.654, "billets_annules": 222, "billets_rembourses": 82, "billets_en_attente": 331, "taux_annulation": 0.015, "entrees_ok": 12883, "taux_presence": 0.925, "rang_pbb_avant": 18, "rang_adversaire_avant": 1, "ecart_classement": -17, "score_domicile": 90, "score_exterieur": 92, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 9.1, "precipitation": 0.2}, {"match_id": "M024", "date": "2026-02-07", "heure": "19:30:00", "competition": "Betclic ÉLITE", "journee": 19, "adversaire": "Nancy", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7089, "taux_remplissage": 0.886, "revenu_billetterie": 333311.0800000036, "prix_moyen_billet": 47.02, "billets_abonnement": 2538.0, "billets_unite": 3708.0, "part_billets_unite": 0.523, "billets_annules": 73, "billets_rembourses": 35, "billets_en_attente": 167, "taux_annulation": 0.01, "entrees_ok": 6430, "taux_presence": 0.907, "rang_pbb_avant": 2, "rang_adversaire_avant": 11, "ecart_classement": 9, "score_domicile": 102, "score_exterieur": 73, "victoire_pbb": 1, "jour_semaine": "Saturday", "vacances_scolaires": false, "temperature": 10.4, "precipitation": 0.0}, {"match_id": "M025", "date": "2026-03-10", "heure": "20:45:00", "competition": "EuroLeague", "journee": 34, "adversaire": "Olympiacos Piraeus", "salle": "ACCOR", "capacite_salle": 15000, "billets_vendus": 13827, "taux_remplissage": 0.922, "revenu_billetterie": 1443359.0799999854, "prix_moyen_billet": 104.39, "billets_abonnement": 2538.0, "billets_unite": 9281.0, "part_billets_unite": 0.671, "billets_annules": 257, "billets_rembourses": 154, "billets_en_attente": 324, "taux_annulation": 0.018, "entrees_ok": 12751, "taux_presence": 0.922, "rang_pbb_avant": 16, "rang_adversaire_avant": 2, "ecart_classement": -14, "score_domicile": 87, "score_exterieur": 104, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 12.5, "precipitation": 0.0}, {"match_id": "M026", "date": "2026-03-12", "heure": "21:00:00", "competition": "EuroLeague", "journee": 31, "adversaire": "LDLC ASVEL Villeurbanne", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 4479, "taux_remplissage": 0.56, "revenu_billetterie": 230278.8699999978, "prix_moyen_billet": 51.41, "billets_abonnement": 2538.0, "billets_unite": 1642.0, "part_billets_unite": 0.367, "billets_annules": 32, "billets_rembourses": 25, "billets_en_attente": 108, "taux_annulation": 0.007, "entrees_ok": 4070, "taux_presence": 0.909, "rang_pbb_avant": 16, "rang_adversaire_avant": 20, "ecart_classement": 4, "score_domicile": 90, "score_exterieur": 81, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 10.5, "precipitation": 0.0}, {"match_id": "M027", "date": "2026-03-15", "heure": "15:30:00", "competition": "Betclic ÉLITE", "journee": 22, "adversaire": "Gravelines-Dunkerque", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6016, "taux_remplissage": 0.752, "revenu_billetterie": 283294.7000000017, "prix_moyen_billet": 47.09, "billets_abonnement": 2538.0, "billets_unite": 2984.0, "part_billets_unite": 0.496, "billets_annules": 83, "billets_rembourses": 33, "billets_en_attente": 148, "taux_annulation": 0.013, "entrees_ok": 5499, "taux_presence": 0.914, "rang_pbb_avant": 2, "rang_adversaire_avant": 14, "ecart_classement": 12, "score_domicile": 109, "score_exterieur": 115, "victoire_pbb": 0, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 11.7, "precipitation": 0.0}, {"match_id": "M028", "date": "2026-03-19", "heure": "20:45:00", "competition": "EuroLeague", "journee": 32, "adversaire": "Partizan Mozzart Bet Belgrade", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6874, "taux_remplissage": 0.859, "revenu_billetterie": 371713.7800000013, "prix_moyen_billet": 54.08, "billets_abonnement": 2538.0, "billets_unite": 3517.0, "part_billets_unite": 0.512, "billets_annules": 112, "billets_rembourses": 69, "billets_en_attente": 195, "taux_annulation": 0.015, "entrees_ok": 6347, "taux_presence": 0.923, "rang_pbb_avant": 16, "rang_adversaire_avant": 17, "ecart_classement": 1, "score_domicile": 81, "score_exterieur": 90, "victoire_pbb": 0, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 13.2, "precipitation": 0.0}, {"match_id": "M029", "date": "2026-03-22", "heure": "18:00:00", "competition": "Betclic ÉLITE", "journee": 23, "adversaire": "Bourg-en-Bresse", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7039, "taux_remplissage": 0.88, "revenu_billetterie": 476103.8799999981, "prix_moyen_billet": 67.64, "billets_abonnement": 2538.0, "billets_unite": 3627.0, "part_billets_unite": 0.515, "billets_annules": 100, "billets_rembourses": 28, "billets_en_attente": 149, "taux_annulation": 0.014, "entrees_ok": 6422, "taux_presence": 0.912, "rang_pbb_avant": 3, "rang_adversaire_avant": 4, "ecart_classement": 1, "score_domicile": 85, "score_exterieur": 95, "victoire_pbb": 0, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 14.3, "precipitation": 0.0}, {"match_id": "M030", "date": "2026-04-02", "heure": "20:45:00", "competition": "EuroLeague", "journee": 35, "adversaire": "EA7 Emporio Armani Milan", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6216, "taux_remplissage": 0.777, "revenu_billetterie": 513970.5900000017, "prix_moyen_billet": 82.69, "billets_abonnement": 2538.0, "billets_unite": 2984.0, "part_billets_unite": 0.48, "billets_annules": 57, "billets_rembourses": 34, "billets_en_attente": 156, "taux_annulation": 0.009, "entrees_ok": 5675, "taux_presence": 0.913, "rang_pbb_avant": 16, "rang_adversaire_avant": 12, "ecart_classement": -4, "score_domicile": 103, "score_exterieur": 93, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 11.5, "precipitation": 0.0}, {"match_id": "M031", "date": "2026-04-04", "heure": "19:00:00", "competition": "Betclic ÉLITE", "journee": 25, "adversaire": "Nanterre", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6955, "taux_remplissage": 0.869, "revenu_billetterie": 347031.84, "prix_moyen_billet": 49.9, "billets_abonnement": 2538.0, "billets_unite": 3764.0, "part_billets_unite": 0.541, "billets_annules": 131, "billets_rembourses": 53, "billets_en_attente": 168, "taux_annulation": 0.018, "entrees_ok": 6386, "taux_presence": 0.918, "rang_pbb_avant": 2, "rang_adversaire_avant": 3, "ecart_classement": 1, "score_domicile": 96, "score_exterieur": 92, "victoire_pbb": 1, "jour_semaine": "Saturday", "vacances_scolaires": false, "temperature": 17.0, "precipitation": 0.0}, {"match_id": "M032", "date": "2026-04-09", "heure": "21:00:00", "competition": "EuroLeague", "journee": 37, "adversaire": "Maccabi Rapyd Tel Aviv", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6137, "taux_remplissage": 0.767, "revenu_billetterie": 428728.1300000004, "prix_moyen_billet": 69.86, "billets_abonnement": 2538.0, "billets_unite": 2932.0, "part_billets_unite": 0.478, "billets_annules": 105, "billets_rembourses": 54, "billets_en_attente": 191, "taux_annulation": 0.016, "entrees_ok": 5620, "taux_presence": 0.916, "rang_pbb_avant": 15, "rang_adversaire_avant": 12, "ecart_classement": -3, "score_domicile": 113, "score_exterieur": 80, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 16.9, "precipitation": 2.3}, {"match_id": "M033", "date": "2026-05-02", "heure": "18:30:00", "competition": "Betclic ÉLITE", "journee": 28, "adversaire": "Chalon/Saône", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5987, "taux_remplissage": 0.748, "revenu_billetterie": 283996.6800000009, "prix_moyen_billet": 47.44, "billets_abonnement": 2538.0, "billets_unite": 2687.0, "part_billets_unite": 0.449, "billets_annules": 64, "billets_rembourses": 69, "billets_en_attente": 126, "taux_annulation": 0.01, "entrees_ok": 5489, "taux_presence": 0.917, "rang_pbb_avant": 2, "rang_adversaire_avant": 9, "ecart_classement": 7, "score_domicile": 103, "score_exterieur": 105, "victoire_pbb": 0, "jour_semaine": "Saturday", "vacances_scolaires": true, "temperature": 24.6, "precipitation": 0.0}, {"match_id": "M034", "date": "2026-05-16", "heure": "17:00:00", "competition": "Betclic ÉLITE", "journee": 30, "adversaire": "Lyon-Villeurbanne", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6233, "taux_remplissage": 0.779, "revenu_billetterie": 428279.8499999979, "prix_moyen_billet": 68.71, "billets_abonnement": 2538.0, "billets_unite": 3047.0, "part_billets_unite": 0.489, "billets_annules": 62, "billets_rembourses": 36, "billets_en_attente": 151, "taux_annulation": 0.01, "entrees_ok": 5664, "taux_presence": 0.909, "rang_pbb_avant": 2, "rang_adversaire_avant": 4, "ecart_classement": 2, "score_domicile": 87, "score_exterieur": 76, "victoire_pbb": 1, "jour_semaine": "Saturday", "vacances_scolaires": true, "temperature": 14.4, "precipitation": 0.1}, {"match_id": "M035", "date": "2026-05-26", "heure": "19:00:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 1, "adversaire": "Strasbourg", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5625, "taux_remplissage": 0.703, "revenu_billetterie": 319496.9400000009, "prix_moyen_billet": 56.8, "billets_abonnement": 2538.0, "billets_unite": 2534.0, "part_billets_unite": 0.45, "billets_annules": 61, "billets_rembourses": 17, "billets_en_attente": 128, "taux_annulation": 0.01, "entrees_ok": 5274, "taux_presence": 0.938, "rang_pbb_avant": 9, "rang_adversaire_avant": 22, "ecart_classement": 13, "score_domicile": 95, "score_exterieur": 64, "victoire_pbb": 1, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 30.8, "precipitation": 0.0}, {"match_id": "M036", "date": "2026-05-30", "heure": "13:30:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 3, "adversaire": "Strasbourg", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 5854, "taux_remplissage": 0.732, "revenu_billetterie": 315777.0000000011, "prix_moyen_billet": 53.94, "billets_abonnement": 2538.0, "billets_unite": 2832.0, "part_billets_unite": 0.484, "billets_annules": 84, "billets_rembourses": 40, "billets_en_attente": 137, "taux_annulation": 0.014, "entrees_ok": 5486, "taux_presence": 0.937, "rang_pbb_avant": 9, "rang_adversaire_avant": 22, "ecart_classement": 13, "score_domicile": 89, "score_exterieur": 75, "victoire_pbb": 1, "jour_semaine": "Saturday", "vacances_scolaires": false, "temperature": 31.4, "precipitation": 0.0}, {"match_id": "M037", "date": "2026-06-02", "heure": "18:00:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 1, "adversaire": "Cholet", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7241, "taux_remplissage": 0.905, "revenu_billetterie": 512607.3600000028, "prix_moyen_billet": 70.79, "billets_abonnement": 2538.0, "billets_unite": 3856.0, "part_billets_unite": 0.533, "billets_annules": 79, "billets_rembourses": 51, "billets_en_attente": 138, "taux_annulation": 0.011, "entrees_ok": 6737, "taux_presence": 0.93, "rang_pbb_avant": 9, "rang_adversaire_avant": 16, "ecart_classement": 7, "score_domicile": 89, "score_exterieur": 90, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 18.5, "precipitation": 0.6}, {"match_id": "M038", "date": "2026-06-04", "heure": "18:30:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 2, "adversaire": "Cholet", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 6297, "taux_remplissage": 0.787, "revenu_billetterie": 317381.7400000041, "prix_moyen_billet": 50.4, "billets_abonnement": 2538.0, "billets_unite": 3063.0, "part_billets_unite": 0.486, "billets_annules": 45, "billets_rembourses": 48, "billets_en_attente": 135, "taux_annulation": 0.007, "entrees_ok": 5856, "taux_presence": 0.93, "rang_pbb_avant": 9, "rang_adversaire_avant": 16, "ecart_classement": 7, "score_domicile": 100, "score_exterieur": 77, "victoire_pbb": 1, "jour_semaine": "Thursday", "vacances_scolaires": false, "temperature": 17.9, "precipitation": 0.3}, {"match_id": "M039", "date": "2026-06-14", "heure": "15:00:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 1, "adversaire": "Monaco", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7451, "taux_remplissage": 0.931, "revenu_billetterie": 581575.6999999951, "prix_moyen_billet": 78.05, "billets_abonnement": 2538.0, "billets_unite": 4137.0, "part_billets_unite": 0.555, "billets_annules": 109, "billets_rembourses": 39, "billets_en_attente": 199, "taux_annulation": 0.014, "entrees_ok": 6895, "taux_presence": 0.925, "rang_pbb_avant": 9, "rang_adversaire_avant": 6, "ecart_classement": -3, "score_domicile": 95, "score_exterieur": 91, "victoire_pbb": 1, "jour_semaine": "Sunday", "vacances_scolaires": false, "temperature": 25.1, "precipitation": 0.0}, {"match_id": "M040", "date": "2026-06-17", "heure": "18:30:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 2, "adversaire": "Monaco", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7471, "taux_remplissage": 0.934, "revenu_billetterie": 494850.7200000013, "prix_moyen_billet": 66.24, "billets_abonnement": 2538.0, "billets_unite": 4043.0, "part_billets_unite": 0.541, "billets_annules": 93, "billets_rembourses": 62, "billets_en_attente": 175, "taux_annulation": 0.012, "entrees_ok": 6883, "taux_presence": 0.921, "rang_pbb_avant": 9, "rang_adversaire_avant": 6, "ecart_classement": -3, "score_domicile": 90, "score_exterieur": 102, "victoire_pbb": 0, "jour_semaine": "Wednesday", "vacances_scolaires": false, "temperature": 31.8, "precipitation": 0.0}, {"match_id": "M041", "date": "2026-06-23", "heure": "19:10:00", "competition": "Betclic ÉLITE - Playoffs", "journee": 5, "adversaire": "Monaco", "salle": "ADIDAS", "capacite_salle": 8000, "billets_vendus": 7476, "taux_remplissage": 0.935, "revenu_billetterie": 422935.5400000004, "prix_moyen_billet": 56.57, "billets_abonnement": 2538.0, "billets_unite": 4055.0, "part_billets_unite": 0.542, "billets_annules": 83, "billets_rembourses": 44, "billets_en_attente": 181, "taux_annulation": 0.011, "entrees_ok": 6833, "taux_presence": 0.914, "rang_pbb_avant": 9, "rang_adversaire_avant": 6, "ecart_classement": -3, "score_domicile": 92, "score_exterieur": 101, "victoire_pbb": 0, "jour_semaine": "Tuesday", "vacances_scolaires": false, "temperature": 35.3, "precipitation": 0.3}];
+const DIGITAL = {"conversion": [{"source": "sms", "medium": "sms", "sessions": 12498, "taux_conversion_pct": 22.6}, {"source": "newsletter", "medium": "email", "sessions": 37335, "taux_conversion_pct": 22.47}, {"source": "google", "medium": "cpc", "sessions": 21257, "taux_conversion_pct": 22.3}, {"source": "facebook", "medium": "social", "sessions": 18315, "taux_conversion_pct": 7.13}, {"source": "(direct)", "medium": "(none)", "sessions": 78697, "taux_conversion_pct": 7.02}, {"source": "google", "medium": "organic", "sessions": 128800, "taux_conversion_pct": 6.99}, {"source": "instagram", "medium": "social", "sessions": 43969, "taux_conversion_pct": 6.9}, {"source": "tiktok", "medium": "social", "sessions": 14696, "taux_conversion_pct": 6.74}, {"source": "euroleague.net", "medium": "referral", "sessions": 7115, "taux_conversion_pct": 6.58}, {"source": "x", "medium": "social", "sessions": 11113, "taux_conversion_pct": 6.54}], "campagnes": [{"canal": "EMAIL", "delivres": 672808, "taux_ouverture_pct": 21.3, "taux_clic_pct": 22.6}, {"canal": "SMS", "delivres": 137549, "taux_ouverture_pct": 38.4, "taux_clic_pct": 34.5}]};
 
-const competitionColor = c => c.includes('Playoffs') ? '#E4032E' : c.includes('EuroLeague') ? '#1439B0' : '#111111';
-const competitionLabel = c => c.includes('Playoffs') ? 'playoffs' : c.includes('EuroLeague') ? 'euroleague' : 'championnat';
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const MUTED_FG = cssVar('--muted-foreground');
+const BORDER = cssVar('--border');
+const C_PLAYOFFS = cssVar('--comp-playoffs');
+const C_EUROLEAGUE = cssVar('--comp-euroleague');
+const C_CHAMPIONNAT = cssVar('--comp-championnat');
+const C_PRIMARY = cssVar('--primary');
+const C_POSITIVE = cssVar('--positive');
 
-// KPIs
+Chart.defaults.color = MUTED_FG;
+Chart.defaults.borderColor = BORDER;
+Chart.defaults.font.family = "'DM Sans', ui-sans-serif, system-ui, sans-serif";
+
+const competitionColor = c => c.includes('Playoffs') ? C_PLAYOFFS : c.includes('EuroLeague') ? C_EUROLEAGUE : C_CHAMPIONNAT;
+const competitionShort = c => c.includes('Playoffs') ? 'Playoffs' : c.includes('EuroLeague') ? 'EuroLeague' : 'Betclic ÉLITE';
+const competitionBadgeClass = c => c.includes('Playoffs') ? 'playoffs' : c.includes('EuroLeague') ? 'euroleague' : '';
+
 const avg = arr => { const v = arr.filter(x => x != null); return v.length ? v.reduce((a,b)=>a+b,0) / v.length : 0; };
 const remplissages = DATA.map(d => d.taux_remplissage).filter(x => x != null);
-const tauxAnnulations = DATA.map(d => d.taux_annulation).filter(x => x != null);
-const kpis = [
-  { label: 'Remplissage moyen', value: (avg(remplissages)*100).toFixed(1) + '%' },
-  { label: 'Match le plus faible', value: (Math.min(...remplissages)*100).toFixed(1) + '%' },
-  { label: 'Match le plus fort', value: (Math.max(...remplissages)*100).toFixed(1) + '%' },
-  { label: "Taux d'annulation moyen", value: tauxAnnulations.length ? (avg(tauxAnnulations)*100).toFixed(1) + '%' : 'N/A' },
-  { label: 'Matchs analysés', value: DATA.length },
-];
-document.getElementById('kpis').innerHTML = kpis.map(k =>
-  `<div class="kpi"><div class="value">${k.value}</div><div class="label">${k.label}</div></div>`
-).join('');
+const annulations = DATA.map(d => d.taux_annulation).filter(x => x != null);
 
-// Chart 1: remplissage par match (bar, chronologique)
+const ICON_DOWN = `<svg class="icon" style="color:${C_PRIMARY}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 7 10 10"/><path d="M17 7v10H7"/></svg>`;
+const ICON_TROPHY = `<svg class="icon" style="color:${C_POSITIVE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/></svg>`;
+const ICON_CALENDAR = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>`;
+
+const kpiValues = [
+  { label: 'Remplissage moyen', value: (avg(remplissages)*100).toFixed(1) + '%' },
+  { label: 'Match le plus faible', value: (Math.min(...remplissages)*100).toFixed(1) + '%', icon: ICON_DOWN },
+  { label: 'Match le plus fort', value: (Math.max(...remplissages)*100).toFixed(1) + '%', icon: ICON_TROPHY },
+  { label: "Taux d'annulation moyen", value: annulations.length ? (avg(annulations)*100).toFixed(1) + '%' : 'N/A' },
+  { label: 'Matchs analysés', value: String(DATA.length) },
+];
+document.getElementById('kpis').innerHTML = kpiValues.map(k => `
+  <div class="panel kpi">
+    <div class="kpi-top"><p class="stat-num">${k.value}</p>${k.icon || ''}</div>
+    <p class="label">${k.label}</p>
+  </div>
+`).join('');
+
 new Chart(document.getElementById('chartRemplissage'), {
   type: 'bar',
   data: {
@@ -254,34 +337,46 @@ new Chart(document.getElementById('chartRemplissage'), {
     datasets: [{
       data: DATA.map(d => (d.taux_remplissage*100).toFixed(1)),
       backgroundColor: DATA.map(d => competitionColor(d.competition)),
+      borderRadius: 3,
     }]
   },
   options: {
     plugins: { legend: { display: false },
       tooltip: { callbacks: { label: c => `${DATA[c.dataIndex].adversaire} — ${c.formattedValue}%` } } },
-    scales: { y: { title: { display: true, text: '% rempli' }, min: 0, max: 100 } }
+    scales: {
+      y: { min: 0, max: 100, grid: { color: BORDER, borderDash: [3, 3] }, ticks: { stepSize: 25, callback: v => v + '%', color: MUTED_FG } },
+      x: { grid: { display: false } }
+    }
   }
 });
+document.getElementById('legendRemplissage').innerHTML = `
+  <span><span class="dot" style="background:${C_PLAYOFFS}"></span>Playoffs</span>
+  <span><span class="dot" style="background:${C_EUROLEAGUE}"></span>EuroLeague</span>
+  <span><span class="dot" style="background:${C_CHAMPIONNAT}"></span>Betclic ÉLITE</span>
+`;
 
-// Chart 2: scatter remplissage vs rang adversaire
 new Chart(document.getElementById('chartClassement'), {
   type: 'scatter',
   data: {
     datasets: [{
       data: DATA.map(d => ({ x: d.rang_adversaire_avant, y: d.taux_remplissage*100 })),
-      backgroundColor: '#1439B0',
+      backgroundColor: DATA.map(d => competitionColor(d.competition)),
+      pointRadius: 5,
+      pointHoverRadius: 6,
     }]
   },
   options: {
-    plugins: { legend: { display: false } },
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: c => `${DATA[c.dataIndex].adversaire} — ${c.formattedValue}` } } },
     scales: {
-      x: { title: { display: true, text: "Rang de l'adversaire avant match" } },
-      y: { title: { display: true, text: '% rempli' }, min: 0, max: 100 }
+      x: { title: { display: true, text: "Rang de l'adversaire avant match", color: MUTED_FG },
+           grid: { color: BORDER, borderDash: [3, 3] } },
+      y: { min: 0, max: 100, grid: { color: BORDER, borderDash: [3, 3] },
+           ticks: { stepSize: 25, callback: v => v + '%', color: MUTED_FG } }
     }
   }
 });
 
-// Chart 3: moyenne par compétition
 const byComp = {};
 DATA.forEach(d => { if (d.taux_remplissage != null) (byComp[d.competition] ||= []).push(d.taux_remplissage); });
 new Chart(document.getElementById('chartCompetition'), {
@@ -291,43 +386,123 @@ new Chart(document.getElementById('chartCompetition'), {
     datasets: [{
       data: Object.values(byComp).map(v => (avg(v)*100).toFixed(1)),
       backgroundColor: Object.keys(byComp).map(competitionColor),
+      borderRadius: 3,
     }]
   },
   options: { plugins: { legend: { display: false } },
-    scales: { y: { title: { display: true, text: '% rempli moyen' }, min: 0, max: 100 } } }
+    scales: {
+      y: { min: 0, max: 100, grid: { color: BORDER, borderDash: [3, 3] }, ticks: { stepSize: 25, callback: v => v + '%', color: MUTED_FG } },
+      x: { grid: { display: false } }
+    } }
 });
 
-// Chart 4: moyenne par jour de semaine
 const jourOrdre = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const jourLabel = { Monday:'Lun', Tuesday:'Mar', Wednesday:'Mer', Thursday:'Jeu', Friday:'Ven', Saturday:'Sam', Sunday:'Dim' };
+const jourAbbr = { Monday:'Lun', Tuesday:'Mar', Wednesday:'Mer', Thursday:'Jeu', Friday:'Ven', Saturday:'Sam', Sunday:'Dim' };
+const jourFull = { Monday:'Lundi', Tuesday:'Mardi', Wednesday:'Mercredi', Thursday:'Jeudi', Friday:'Vendredi', Saturday:'Samedi', Sunday:'Dimanche' };
 const byJour = {};
 DATA.forEach(d => { if (d.taux_remplissage != null) (byJour[d.jour_semaine] ||= []).push(d.taux_remplissage); });
 const joursPresents = jourOrdre.filter(j => byJour[j]);
 new Chart(document.getElementById('chartJour'), {
   type: 'bar',
   data: {
-    labels: joursPresents.map(j => jourLabel[j]),
+    labels: joursPresents.map(j => jourAbbr[j]),
     datasets: [{
       data: joursPresents.map(j => (avg(byJour[j])*100).toFixed(1)),
-      backgroundColor: '#E4032E',
+      backgroundColor: C_PLAYOFFS,
+      borderRadius: 3,
     }]
   },
   options: { plugins: { legend: { display: false } },
-    scales: { y: { title: { display: true, text: '% rempli moyen' }, min: 0, max: 100 } } }
+    scales: {
+      y: { min: 0, max: 100, grid: { color: BORDER, borderDash: [3, 3] }, ticks: { stepSize: 25, callback: v => v + '%', color: MUTED_FG } },
+      x: { grid: { display: false } }
+    } }
 });
 
-// Table des 8 matchs les plus faibles
 const faibles = [...DATA].sort((a,b) => a.taux_remplissage - b.taux_remplissage).slice(0, 8);
 document.querySelector('#tableFaibles tbody').innerHTML = faibles.map(d => `
-  <tr class="low-fill">
-    <td>${d.match_id}</td>
-    <td>${d.date}</td>
-    <td>${d.adversaire}</td>
-    <td><span class="badge ${competitionLabel(d.competition)}">${d.competition}</span></td>
-    <td><strong>${(d.taux_remplissage*100).toFixed(1)}%</strong></td>
-    <td>${d.rang_adversaire_avant}</td>
-    <td>${jourLabel[d.jour_semaine] || d.jour_semaine}</td>
+  <tr>
+    <td class="mono-xs">${d.match_id}</td>
+    <td class="muted">${d.date}</td>
+    <td class="medium">${d.adversaire}</td>
+    <td><span class="badge ${competitionBadgeClass(d.competition)}">${competitionShort(d.competition)}</span></td>
+    <td>
+      <div class="fill-cell">
+        <div class="fill-track"><div class="fill-bar" style="width:${(d.taux_remplissage*100).toFixed(1)}%"></div></div>
+        <span class="fill-value">${(d.taux_remplissage*100).toFixed(1)}%</span>
+      </div>
+    </td>
+    <td class="muted">${d.rang_adversaire_avant}</td>
+    <td><span class="day-cell">${ICON_CALENDAR}${jourFull[d.jour_semaine] || d.jour_semaine}</span></td>
   </tr>
+`).join('');
+
+// Conversion par canal (données live depuis silver.web_sessions)
+const convData = [...DIGITAL.conversion].sort((a, b) => a.taux_conversion_pct - b.taux_conversion_pct);
+new Chart(document.getElementById('chartConversion'), {
+  type: 'bar',
+  data: {
+    labels: convData.map(d => `${d.source} / ${d.medium}`),
+    datasets: [{
+      data: convData.map(d => d.taux_conversion_pct),
+      backgroundColor: convData.map(d => d.taux_conversion_pct > 15 ? C_EUROLEAGUE : C_CHAMPIONNAT),
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: c => `${c.formattedValue}% de sessions converties` } } },
+    scales: {
+      x: { min: 0, max: 25, grid: { color: BORDER, borderDash: [3, 3] }, ticks: { callback: v => v + '%', color: MUTED_FG } },
+      y: { grid: { display: false }, ticks: { color: MUTED_FG, font: { size: 11 } } }
+    }
+  }
+});
+
+// Performance des campagnes par canal (données live depuis bronze.raw_campagnes_evenements)
+document.getElementById('campagnesStats').innerHTML = DIGITAL.campagnes.map(c => `
+  <div style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-family:var(--font-display);font-weight:600;font-size:15px;">${c.canal}</span>
+      <span style="font-size:11px;color:${MUTED_FG};font-family:var(--font-mono);">${c.delivres.toLocaleString('fr-FR')} envois</span>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:6px;">
+      <div>
+        <div class="fill-track" style="width:120px;"><div class="fill-bar" style="width:${c.taux_ouverture_pct}%;background:${C_EUROLEAGUE};"></div></div>
+        <span style="font-size:11px;color:${MUTED_FG};">Ouverture ${c.taux_ouverture_pct}%</span>
+      </div>
+      <div>
+        <div class="fill-track" style="width:120px;"><div class="fill-bar" style="width:${c.taux_clic_pct}%;"></div></div>
+        <span style="font-size:11px;color:${MUTED_FG};">Clic ${c.taux_clic_pct}%</span>
+      </div>
+    </div>
+  </div>
+`).join('');
+
+const INSIGHTS = [
+  { h: "Le classement de l'adversaire domine tout",
+    p: "Le remplissage chute de ~90% face à un top adversaire à ~65% face à un adversaire en bas de tableau. Confirmé par un modèle de régression : feature la plus influente, de loin." },
+  { h: "Écart net entre compétitions",
+    p: "Playoffs et EuroLeague remplissent mieux (~83-85%) que le championnat national Betclic ÉLITE (~75%)." },
+  { h: "Le dimanche sous-performe",
+    p: "~75% de remplissage le dimanche contre 81-82% les mardis et jeudis." },
+  { h: "Les vacances scolaires pèsent",
+    p: "75% pendant les vacances contre 81% hors vacances — effet vérifié indépendamment du classement adversaire." },
+  { h: "Satisfaction = résultat, pas remplissage",
+    p: "8.1/10 en victoire contre 6.2/10 en défaite. Remplissage et satisfaction sont deux conséquences distinctes du niveau de l'adversaire." },
+  { h: "Les annulations suivent la demande",
+    p: "Corrélation 0.62 : les matchs à forte affluence attendue génèrent plus d'achats annulés — piste pour une politique d'annulation adaptée." },
+  { h: "Bassin de fans au nord-est parisien",
+    p: "Les 18e et 19e arrondissements affichent la plus forte pénétration (>60 contacts pour 1000 habitants), cohérent avec la proximité de la salle." },
+  { h: "Le SMS surperforme largement l'email",
+    p: "SMS, newsletter et Google Ads convertissent 3x mieux (~22.5%) que l'organique/social (~6.5-7%). Le SMS atteint 38.4% d'ouverture contre 21.3% pour l'email." },
+];
+document.getElementById('insightGrid').innerHTML = INSIGHTS.map(i => `
+  <article class="panel insight-card">
+    <h3>${i.h}</h3>
+    <p>${i.p}</p>
+  </article>
 `).join('');
 </script>
 
