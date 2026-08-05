@@ -2,159 +2,61 @@
 
 ## Question métier
 
-**Quels matchs sous-performent en remplissage, et quels leviers (tarification,
-campagnes, timing) pourraient corriger ça ?**
+Quels matchs sous-performent en remplissage, et quels leviers (tarification, campagnes, timing) pourraient corriger ça ?
 
-Question choisie parce qu'elle croise directement les quatre sources
-fournies (billetterie, scans, calendrier, contexte), qu'elle a une réponse
-vérifiable (le calendrier et les résultats sportifs sont réels), et qu'elle
-débouche sur des recommandations concrètes pour un dirigeant du club.
+Cette question croise les quatre sources fournies (billetterie, scans, calendrier, contexte) et se vérifie facilement : le calendrier et les résultats sportifs sont réels. Elle débouche aussi sur des recommandations concrètes pour un dirigeant du club, ce qui n'était pas garanti avec d'autres angles possibles (satisfaction seule, ou performance de campagnes isolée).
 
 ## Démarche
 
-1. Ingestion de toutes les sources fournies (billetterie, scans, boutique,
-   contacts, calendrier, résultats, sessions/événements web, campagnes) +
-   sources externes (météo, vacances scolaires, classement EuroLeague,
-   population) dans une architecture en couches bronze / silver / gold
-   (DuckDB).
-2. Construction d'une table de faits `gold.fact_match` : une ligne par
-   match à domicile (41 matchs), avec taux de remplissage, taux de
-   présence réelle, taux d'annulation, classement avant-match, contexte
-   temporel et météo.
-3. Exploration statistique et visuelle (`analysis/exploration.ipynb`, 13
-   sections), avec vérification systématique des hypothèses avant
-   conclusion (pas de corrélation acceptée sans test des explications
-   alternatives).
-4. Modèle de régression pour confirmer et quantifier les facteurs
-   identifiés, et analyse du funnel e-commerce / performance des
-   campagnes (branches `experiment/*`, mergées dans `main`).
-5. Dashboard autonome (`dashboard/dashboard.html`) synthétisant les
-   résultats pour un public non-technique.
+J'ai ingéré toutes les sources fournies (billetterie, scans, boutique, contacts, calendrier, résultats, sessions et événements web, campagnes), plus des sources externes (météo, vacances scolaires, classement EuroLeague, population), dans une architecture en couches bronze / silver / gold sous DuckDB.
+
+`gold.fact_match` regroupe les 41 matchs à domicile de la saison : taux de remplissage, taux de présence réelle, taux d'annulation, classement avant-match, contexte temporel et météo. L'exploration (`analysis/exploration.ipynb`, 13 sections) suit une règle simple : aucune corrélation n'est retenue sans qu'on ait cherché à l'expliquer autrement. Deux hypothèses raisonnables (effet horaire, effet météo) ont d'ailleurs été écartées après vérification.
+
+Un modèle de régression confirme et chiffre les facteurs identifiés à l'œil, et une analyse séparée du funnel e-commerce et des campagnes marketing complète le tableau (branches `experiment/*`, mergées dans `main`). Le tout se lit en deux minutes dans `dashboard/dashboard.html`.
 
 ## Chiffres clés
 
-- **Taux de remplissage moyen : 80%** sur la saison (min 40.5%, max 95.1%)
-- **Par compétition** : Playoffs 84.7% > EuroLeague 82.5% > Championnat
-  (Betclic ÉLITE) 74.6%
-- **Facteur le plus discriminant : le classement de l'adversaire.** Le
-  taux de remplissage chute nettement à mesure que l'adversaire est mal
-  classé (~90% face à un top adversaire, ~65% face à un adversaire en bas
-  de tableau) : confirmé par le modèle de régression comme feature la
-  plus influente, de loin.
-- **Effet jour de semaine** : le dimanche est systématiquement le jour le
-  plus faible (74.8% de moyenne sur 10 matchs), contre ~81-82% les mardis
-  et jeudis.
-- **Effet vacances scolaires** (vérifié, pas un artefact de calendrier) :
-  75.2% pendant les vacances vs 81% hors vacances. Rang moyen des
-  adversaires comparable dans les deux groupes (9.6 vs 10.1).
-- **Météo : aucun effet mesurable** (corrélation 0.04 avec la température,
-  0.02 avec les précipitations).
-- **Horaire du match : pas un facteur indépendant.** Un écart apparent
-  après-midi/soirée s'est révélé confondu avec l'effet jour de semaine
-  (71% des matchs d'après-midi sont des dimanches).
-- **Annulations corrélées à la demande** (0.62) : les matchs à forte
-  affluence attendue génèrent proportionnellement plus d'achats annulés,
-  bien que l'ampleur reste modeste en absolu (0.2% à 1.8% du volume).
-- **Satisfaction expliquée par le résultat sportif, pas le remplissage** :
-  8.14/10 en victoire contre 6.20/10 en défaite. Le remplissage et la
-  satisfaction semblaient corrélés (-0.38) mais sont en réalité deux
-  conséquences distinctes du niveau de l'adversaire (la victoire étant
-  elle-même corrélée à -0.45 avec le remplissage).
-- **Géographie du bassin de fans** : les 18e et 19e arrondissements
-  affichent la plus forte pénétration (68 et 63 contacts pour 1000
-  habitants), cohérent avec la proximité de l'Adidas Arena. Plusieurs
-  communes de petite couronne (Poissy, Saint-Ouen, Villejuif) ressortent
-  aussi fortement.
-- **Modèle de régression (Ridge, LOO-CV)** : MAE de 8.3% (erreur relative)
-  — solide pour 41 observations. Confirme statistiquement que le
-  classement adversaire domine largement les autres features.
-- **Funnel digital et campagnes** : les canaux propriétaires (SMS,
-  newsletter, Google Ads payant) convertissent 3x mieux (~22.5%) que
-  l'organique et le social (~6.5-7%), malgré un volume de trafic bien
-  plus faible. Le SMS surperforme l'email en engagement (38.4%
-  d'ouverture, 34.5% de clic, contre 21.3%/22.6% pour l'email) tout en
-  convertissant aussi bien que la newsletter.
+Le taux de remplissage moyen tourne autour de 80% sur la saison, avec un écart important entre le pire match (40.5%) et le meilleur (95.1%).
+
+Par compétition, les Playoffs et l'EuroLeague remplissent mieux (84.7% et 82.5%) que le championnat national Betclic ÉLITE (74.6%). Mais ce n'est pas le facteur le plus discriminant : c'est le classement de l'adversaire. Le remplissage passe d'environ 90% face à un adversaire du haut du tableau à environ 65% face à un adversaire en bas de classement, et le modèle de régression confirme que cette variable domine largement les autres.
+
+Le jour de la semaine joue aussi : le dimanche affiche la moyenne la plus faible (74.8% sur 10 matchs) contre 81-82% les mardis et jeudis. Les vacances scolaires réduisent également le remplissage (75.2% contre 81% hors vacances), un résultat contre-intuitif que j'ai vérifié avant de le retenir : le rang moyen des adversaires est comparable pendant et hors vacances (9.6 contre 10.1), donc l'effet n'est pas un artefact de calendrier.
+
+La météo, en revanche, n'a aucun effet mesurable (corrélations de 0.04 pour la température et 0.02 pour les précipitations). L'horaire du match non plus, une fois isolé de l'effet jour de semaine : 71% des matchs d'après-midi tombent un dimanche, donc l'écart apparent entre après-midi et soirée n'était qu'une reformulation de l'effet déjà identifié.
+
+Deux résultats moins attendus s'ajoutent. D'abord, les annulations augmentent avec la demande (corrélation de 0.62) : les matchs les plus attendus génèrent proportionnellement plus d'achats annulés ensuite, même si l'ampleur reste faible en valeur absolue (0.2% à 1.8% du volume). Ensuite, la satisfaction du public dépend du résultat sportif, pas du remplissage : 8.14/10 en victoire contre 6.20/10 en défaite. Une corrélation initiale entre remplissage et satisfaction (-0.38) laissait croire à un lien direct ; en creusant, il s'agit en fait de deux conséquences distinctes du même facteur, le niveau de l'adversaire, puisque la victoire elle-même est corrélée à -0.45 avec le remplissage.
+
+Côté géographie, les 18e et 19e arrondissements affichent la plus forte pénétration de fans rapportée à la population (68 et 63 contacts pour 1000 habitants), cohérent avec la proximité de l'Adidas Arena. Plusieurs communes de petite couronne (Poissy, Saint-Ouen, Villejuif) ressortent aussi bien.
+
+Le modèle de régression (Ridge, validation croisée leave-one-out) obtient une erreur moyenne de 8.3%, solide pour 41 observations, et confirme que le classement adversaire est de loin la feature la plus influente.
+
+Enfin, côté digital : les canaux propriétaires (SMS, newsletter, Google Ads payant) convertissent trois fois mieux (~22.5%) que l'organique et le social (~6.5-7%), et le SMS surperforme l'email en engagement (38.4% d'ouverture contre 21.3%) tout en convertissant aussi bien que la newsletter.
 
 ## Réponse à la question métier
 
-Les matchs qui sous-performent le plus nettement partagent un point commun
-clair : un adversaire mal classé au moment du match (ex. Dijon,
-Saint-Quentin, LDLC ASVEL Villeurbanne. Tous entre 40% et 60% de
-remplissage), confirmé à la fois par l'analyse descriptive et par un
-modèle statistique. Le championnat national remplit structurellement
-moins bien que l'EuroLeague, et le dimanche ainsi que les périodes de
-vacances scolaires sont des créneaux à surveiller, indépendamment de la
-force de l'adversaire. Trois enseignements complémentaires enrichissent
-le tableau : les matchs premium génèrent plus d'annulations (paradoxe du
-succès), la satisfaction du public dépend du résultat sportif et non du
-remplissage, et les canaux marketing propriétaires (SMS notamment)
-convertissent nettement mieux que l'acquisition organique/sociale : un
-levier digital directement activable pour les campagnes ciblées.
+Les matchs les plus faibles ont presque tous un point commun : un adversaire mal classé. Dijon, Saint-Quentin, LDLC ASVEL Villeurbanne tournent tous entre 40% et 60% de remplissage, et le modèle statistique confirme que ce facteur pèse plus que tous les autres réunis. Le championnat national reste structurellement en dessous de l'EuroLeague, et le dimanche comme les vacances scolaires sont des créneaux à surveiller indépendamment de l'adversaire du soir.
 
-### Recommandations actionnables
+Deux points méritent d'être retenus au-delà du remplissage lui-même : les matchs premium génèrent davantage d'annulations, et la satisfaction du public suit le résultat sportif plutôt que l'affluence.
 
-1. **Tarification dynamique par force d'adversaire** : politique tarifaire
-   plus agressive (promotions, offres groupées) pour les matchs contre des
-   adversaires classés au-delà de la 15e place.
-2. **Campagnes ciblées sur les dimanches et les périodes de vacances
-   scolaires**, via SMS en priorité vu son meilleur taux d'engagement
-   (38.4% d'ouverture contre 21.3% pour l'email).
-3. **Capitaliser sur l'attrait EuroLeague** dans la communication et le
-   packaging des abonnements : écart de 8 points avec le championnat.
-4. **Politique d'annulation adaptée aux matchs à forte demande** :
-   envisager des frais d'annulation modulés ou une liste d'attente pour
-   récupérer les places libérées tardivement sur les matchs premium.
-5. **Marketing géolocalisé** : intensifier la présence dans les zones à
-   forte pénétration existante (nord-est parisien, Poissy, Saint-Ouen)
-   pour consolider la base, et cibler l'acquisition dans les zones à fort
-   potentiel démographique mais faible pénétration actuelle.
-6. **Concentrer le budget d'acquisition payante** sur les canaux à forte
-   conversion (SMS, newsletter, Google Ads) plutôt que sur l'élargissement
-   de l'audience organique/sociale, déjà large mais peu convertissante.
+### Recommandations
+
+1. **Tarification dynamique par force d'adversaire.** Une politique plus agressive (promotions, offres groupées) sur les matchs contre des adversaires classés au-delà de la 15e place.
+2. **Campagnes ciblées sur les dimanches et les vacances scolaires**, en priorisant le SMS pour son meilleur taux d'engagement.
+3. **Capitaliser sur l'EuroLeague dans la communication et le packaging des abonnements**, vu l'écart de 8 points avec le championnat.
+4. **Adapter la politique d'annulation** sur les matchs premium, par exemple avec des frais modulés ou une liste d'attente pour récupérer les places libérées tardivement.
+5. **Renforcer le marketing géolocalisé** dans le nord-est parisien tout en identifiant les zones à fort potentiel démographique mais faible pénétration actuelle.
+6. **Réallouer le budget d'acquisition payante** vers les canaux qui convertissent le mieux (SMS, newsletter, Google Ads) plutôt que l'organique.
 
 ## Limites
 
-- **41 matchs seulement** : certains découpages reposent sur de petits
-  échantillons (un seul match un vendredi, par exemple). Le modèle de
-  régression sert surtout à confirmer et quantifier les facteurs déjà
-  identifiés par l'analyse descriptive, pas à prédire de façon fiable des
-  matchs hors de cette saison.
-- **Hypothèses testées et écartées, documentées par transparence** :
-  l'effet horaire (confondu avec le jour de semaine) et l'effet météo
-  (non significatif) ont été explorés puis abandonnés comme facteurs
-  explicatifs : inclus dans le notebook pour montrer la démarche complète,
-  pas seulement les résultats positifs.
-- **L'analyse satisfaction** porte sur ~7956 réponses `POST_MATCH`
-  uniquement (les enquêtes `GENERALE_MI_SAISON`/`GENERALE_FIN_SAISON`
-  n'ont pas de `match_id` et ne sont pas exploitables au niveau match).
-- **L'analyse géographique** couvre le bassin francilien : 25 codes
-  postaux sur 69 dans `silver.contacts` n'ont pas de correspondance dans
-  les référentiels de population (fans hors Île-de-France ou codes
-  fictifs issus des données de test).
-- **Le funnel digital concerne la boutique en ligne**, pas la billetterie
-  (deux systèmes de tracking distincts, GA4 vs plateforme de billetterie) :
-  les taux de conversion mesurés portent sur les achats de produits
-  dérivés, pas directement sur les billets de match.
-- **Qualité de données** : plusieurs anomalies détectées et corrigées dans
-  le pipeline (2 fichiers billetterie JSON corrompus sur 358, 1 fichier
-  scan sans en-tête, 1 fichier scan vide, formats de date multiples dans
-  contacts et boutique). Détail complet dans `docs/data_quality.md`.
-  Toutes les corrections sont documentées et automatisées, aucune donnée
-  n'a été estimée ou inventée pour combler un manque.
+L'échantillon reste petit : 41 matchs, avec parfois un seul match par catégorie (un seul vendredi, par exemple), donc certains découpages sont à prendre avec prudence. Le modèle de régression sert surtout à confirmer et chiffrer ce que l'analyse descriptive montrait déjà, pas à prédire des matchs hors de cette saison.
+
+Deux hypothèses plausibles (effet horaire, effet météo) ont été testées puis écartées ; je les garde dans le notebook pour montrer la démarche complète, pas seulement les résultats qui confirment quelque chose.
+
+L'analyse de satisfaction ne porte que sur les ~7956 réponses de type POST_MATCH : les enquêtes de mi-saison et fin de saison n'ont pas de match_id et ne sont donc pas exploitables à ce niveau. L'analyse géographique se limite au bassin francilien, avec 25 codes postaux sur 69 sans correspondance dans les référentiels de population utilisés. Le funnel digital, lui, porte sur la boutique en ligne et non sur la billetterie : ce sont deux systèmes de tracking distincts.
+
+Côté qualité de données, le pipeline a rencontré et corrigé plusieurs anomalies réelles : deux fichiers billetterie corrompus sur 358, un fichier scan sans en-tête, un fichier scan vide, et des formats de date multiples dans les tables contacts et boutique. Le détail est dans `docs/data_quality.md`. Aucune donnée manquante n'a été estimée ou inventée pour combler un trou.
 
 ## Usage de l'IA
 
-Claude (Anthropic) a été utilisé tout au long du projet : écriture et débogage des
-scripts d'ingestion et de transformation (Python/DuckDB/SQL), diagnostic
-d'anomalies de données (ex. remontée du bug `scan_20251017.csv` depuis un
-`taux_presence` incohérent en gold jusqu'à sa cause racine), conception et
-vérification des analyses statistiques (y compris le démêlage de la
-variable confondante victoire/défaite dans l'analyse satisfaction, et de
-l'effet horaire confondu avec le jour de semaine), construction du modèle
-de prédiction, de l'analyse du funnel digital, et du dashboard. Toutes les
-requêtes et tous les résultats ont été exécutés et vérifiés manuellement
-sur les données réelles avant validation. Aucun résultat n'a été utilisé
-sans être recalculé et confirmé sur le dataset complet, et plusieurs
-hypothèses initialement plausibles (effet horaire, corrélation
-satisfaction directe) ont été testées puis rejetées après vérification
-plutôt qu'acceptées telles quelles.
+J'ai utilisé Claude tout au long du projet : conception de l'architecture bronze/silver/gold, écriture et débogage des scripts (Python, DuckDB, SQL), diagnostic d'anomalies (par exemple remonter jusqu'à la cause d'un `taux_presence` incohérent en gold, qui venait d'un fichier scan sans en-tête), vérification des analyses statistiques, et construction du modèle et du dashboard. J'ai exécuté et vérifié chaque requête et chaque résultat sur mes données réelles avant de les valider, et j'ai testé puis rejeté plusieurs hypothèses qui semblaient plausibles au départ (effet horaire, corrélation directe satisfaction-remplissage) plutôt que de les accepter telles quelles.
